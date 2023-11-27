@@ -1,0 +1,30 @@
+server:
+  port: 7500
+spring:
+  application:
+    name: userservice # 服务名称
+  datasource:
+    url: jdbc:mysql://10.129.0.31:3306/EBed?useSSL=false
+    username: root
+    password: Dyp20001209
+    driver-class-name: com.mysql.jdbc.Driver
+  redis:
+    host: 10.129.0.31
+    port: 6379
+    password: Dyp20001209
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: 100ms
+  cloud:
+    nacos:
+      server-addr: 10.129.0.31:8848
+mybatis:
+  type-aliases-package: org.howard1209a.user.pojo
+  configuration:
+    map-underscore-to-camel-case: true
+logging:
+  level:
+    cn.itcast: debug

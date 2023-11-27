@@ -1,0 +1,10 @@
+server:
+  port: 7503
+spring:
+  mvc:
+    static-path-pattern: /static/**
+  application:
+    name: staticweb # 服务名称
+  cloud:
+    nacos:
+      server-addr: 10.129.0.31:8848
