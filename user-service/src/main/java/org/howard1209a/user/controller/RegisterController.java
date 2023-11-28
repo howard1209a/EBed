@@ -34,7 +34,7 @@ public class RegisterController {
     }
 
     @PostMapping("register")
-    public Response<String> login(@RequestBody RegisterDto registerDto, HttpServletRequest request) {
+    public Response<String> register(@RequestBody RegisterDto registerDto, HttpServletRequest request) {
         Cookie cookie = Utils.getCookie("session", request);
         return registerService.checkAndRegister(registerDto, cookie.getValue());
     }

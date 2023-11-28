@@ -120,7 +120,7 @@
         <button type="button" onclick="submitForm()">提交</button>
     </form>
     <div class="login-link">
-        <p>Already have an account? <a href="http://localhost:10010/login.html">Login</a></p>
+        <p>Already have an account? <a href="http://localhost:10010/static/login.html">Login</a></p>
     </div>
     <script>
         function submitForm() {
@@ -153,10 +153,7 @@
                 .then(msg => {
                     alert(msg.data);
                     if (msg.success) {
-                        console.log("yes");
                         window.location.href = 'login.html';  // 替换为实际的登录页面路径
-                    } else {
-                        console.log("none");
                     }
                 })
                 .catch(error => {

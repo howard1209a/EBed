@@ -1,0 +1,40 @@
+package org.howard1209a.file.service;
+
+import org.howard1209a.file.mapper.ImgGroupMapper;
+import org.howard1209a.file.pojo.ImgGroup;
+import org.howard1209a.file.pojo.UserState;
+import org.howard1209a.file.pojo.dto.Response;
+import org.howard1209a.file.util.SnowflakeIdUtils;
+import org.howard1209a.file.util.Utils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.Cookie;
+
+import static org.howard1209a.file.constant.FileConstant.USER_STATE_KEY;
+
+@Service
+public class ImgGroupService {
+    @Autowired
+    private SnowflakeIdUtils snowflakeIdUtils;
+    @Autowired
+    private ImgGroupMapper imgGroupMapper;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    public Response<String> saveGroup(String imgGroupName, Long userId, String session) {
+        if (userId == null) {
+            UserState userState = (UserState) redisTemplate.opsForValue().get(USER_STATE_KEY + session);
+            userId = userState.getUserId();
+        }
+        ImgGroup imgGroup = new ImgGroup(snowflakeIdUtils.nextId(), imgGroupName, userId);
+        ImgGroup res = imgGroupMapper.checkGroupNameForOneUser(imgGroup);
+        if (res == null) {
+            imgGroupMapper.saveGroup(imgGroup);
+            return new Response<>(true, "建立分组成功");
+        } else {
+            return new Response<>(false, "分组名重复");
+        }
+    }
+}

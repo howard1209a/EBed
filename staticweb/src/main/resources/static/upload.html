@@ -102,6 +102,69 @@
         #upload-button:hover {
             background-color: #2962ff;
         }
+
+        .image-preview {
+            position: relative;
+            margin: 10px;
+            max-width: 200px;
+            max-height: 200px;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            /* 设置相同的宽高，例如 150px */
+            width: 150px;
+            height: 150px;
+        }
+
+        .delete-option {
+            position: absolute;
+            bottom: 5px;
+            left: 5px; /* 调整左下角位置 */
+            background-color: #fff;
+            color: #ff5c5c;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .delete-option:hover {
+            background-color: #ff5c5c;
+            color: #fff;
+        }
+
+        .image-name {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff5c5c; /* 修改为突出显示的颜色，可以根据需要调整 */
+            font-size: 14px; /* 增加字体大小 */
+            font-weight: bold; /* 加粗字体 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            text-align: center;
+        }
+
+        .add-description-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background-color: #3498db; /* 按钮背景颜色 */
+            color: #fff; /* 按钮文字颜色 */
+            padding: 5px 10px; /* 按钮内边距 */
+            cursor: pointer; /* 鼠标样式 */
+            border: none; /* 去掉边框 */
+            border-radius: 5px; /* 圆角 */
+            font-size: 12px; /* 字体大小 */
+        }
     </style>
 </head>
 <body>
@@ -137,6 +200,8 @@
 </div>
 
 <script>
+    let uploadedFiles = [];
+
     function navigateTo(page) {
         window.location.href = page;
     }
@@ -145,46 +210,116 @@
         document.getElementById('fileInput').click();
     }
 
+    // 使用 Map 来维护文件对象和它们的名称的映射
+    const fileNamesMap = new Map();
+
+    // 用于存储每个图片的描述
+    const imageDescriptions = [];
+
     function previewImages() {
         const fileInput = document.getElementById('fileInput');
         const previewContainer = document.getElementById('image-preview-container');
 
         if (fileInput.files) {
             for (let i = 0; i < fileInput.files.length; i++) {
-                const reader = new FileReader();
-                const imagePreview = document.createElement('img');
-                imagePreview.className = 'image-preview';
+                if (uploadedFiles.length < 9) {
+                    const reader = new FileReader();
+                    const imagePreview = document.createElement('div');
+                    imagePreview.className = 'image-preview';
+                    const image = document.createElement('img');
+                    image.src = '#'; // Initial src, will be updated on reader load
+                    image.className = 'preview-image';
+                    const deleteOption = document.createElement('div');
+                    deleteOption.className = 'delete-option';
+                    deleteOption.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                    const imageName = document.createElement('div');
+                    imageName.className = 'image-name';
+                    const fileName = fileInput.files[i].name;
+                    imageName.textContent = fileName;
 
-                reader.onload = function (e) {
-                    imagePreview.src = e.target.result;
+                    const addDescriptionBtn = document.createElement('button');
+                    addDescriptionBtn.className = 'add-description-btn';
+                    addDescriptionBtn.textContent = '添加描述';
+                    addDescriptionBtn.addEventListener('click', function () {
+                        const description = prompt('请输入图片描述', '');
+                        // 将描述存储到数组中
+                        imageDescriptions.push(description || ''); // 如果用户点击取消，则存储空字符串
+                    });
+
+                    deleteOption.addEventListener('click', function () {
+                        // Remove the corresponding file from uploadedFiles
+                        const index = uploadedFiles.indexOf(fileInput.files[i]);
+                        if (index !== -1) {
+                            uploadedFiles.splice(index, 1);
+                        }
+
+                        // Remove the preview elements
+                        previewContainer.removeChild(imagePreview);
+                    });
+
+                    reader.onload = function (e) {
+                        image.src = e.target.result;
+                    };
+
+                    reader.readAsDataURL(fileInput.files[i]);
+
+                    // 将文件加入已上传文件列表
+                    uploadedFiles.push(fileInput.files[i]);
+
+                    // 将图片、删除选项、图片名称、添加描述按钮加入预览容器
+                    imagePreview.appendChild(image);
+                    imagePreview.appendChild(deleteOption);
+                    imagePreview.appendChild(imageName);
+                    imagePreview.appendChild(addDescriptionBtn);
                     previewContainer.appendChild(imagePreview);
-                };
-
-                reader.readAsDataURL(fileInput.files[i]);
+                } else {
+                    alert('最多只能上传 9 张图片');
+                    break; // 阻止继续添加图片
+                }
             }
         }
     }
 
     function uploadImages() {
-        const fileInput = document.getElementById('fileInput');
         const formData = new FormData();
 
-        if (fileInput.files) {
-            for (let i = 0; i < fileInput.files.length; i++) {
-                formData.append('images', fileInput.files[i]);
-            }
+        // 将所有已上传文件加入 formData
+        for (let i = 0; i < uploadedFiles.length; i++) {
+            formData.append('images', uploadedFiles[i]);
         }
 
         // 使用 fetch 或其他方式将 formData 发送到后端
         // 这里只是演示，实际上需要根据后端接口进行调整
-        fetch('http://localhost:10010/', {
+        fetch('http://localhost:10010/file/upload/img', {
             method: 'POST',
             body: formData
         })
             .then(response => response.json())
-            .then(data => {
-                // 处理后端返回的数据
-                console.log(data);
+            .then(msg => {
+                alert(msg.data);
+                if (msg.success) {
+                    // 清空已上传文件列表和图片预览
+                    uploadedFiles = [];
+                    document.getElementById('image-preview-container').innerHTML = '';
+
+                    // 将 imageDescriptions 数组发送到后端
+                    fetch('http://localhost:10010/file/upload/img/description/all', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(imageDescriptions),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('后端返回的数据:', data);
+                            // 清空数组，准备下一次上传
+                            imageDescriptions.length = 0;
+                        })
+                        .catch(error => {
+                            console.error('上传图片描述失败:', error);
+                        });
+                }
             })
             .catch(error => {
                 console.error('Error:', error);

@@ -21,6 +21,10 @@ spring:
   cloud:
     nacos:
       server-addr: 10.129.0.31:8848
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 mybatis:
   type-aliases-package: org.howard1209a.file.pojo
   configuration:

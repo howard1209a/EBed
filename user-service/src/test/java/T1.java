@@ -1,5 +1,6 @@
 import lombok.extern.slf4j.Slf4j;
 import org.howard1209a.user.UserApplication;
+import org.howard1209a.user.feign.FileClient;
 import org.howard1209a.user.mapper.RegisterMapper;
 import org.howard1209a.user.pojo.User;
 import org.howard1209a.user.pojo.dto.LoginDto;
@@ -18,9 +19,10 @@ public class T1 {
     private RedisTemplate redisTemplate;
     @Autowired
     private RegisterMapper registerMapper;
+    @Autowired
+    private FileClient fileClient;
     @Test
     public void t1() {
-        System.out.println(registerMapper.findByUserNameAndPassword(new LoginDto("321","4123")));
 
     }
 }

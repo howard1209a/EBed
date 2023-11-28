@@ -1,0 +1,11 @@
+POST http://localhost:10010/file/upload/img/description/all
+Content-Type: application/json
+
+["11","22"]
+
+
+###
+POST http://localhost:10010/file/upload/img/description/all
+Accept: application/json
+
+###

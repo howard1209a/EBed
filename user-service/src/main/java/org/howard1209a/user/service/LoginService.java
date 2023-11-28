@@ -26,7 +26,7 @@ public class LoginService {
         if (!user.getPassword().equals(loginDto.getPassword())) {
             return new Response<>(false, "密码错误");
         }
-        redisTemplate.opsForValue().set(USER_STATE_KEY + session, new UserState(null, true));
+        redisTemplate.opsForValue().set(USER_STATE_KEY + session, new UserState(null, true, user.getUserId()));
         return new Response<>(true, "登陆成功");
     }
 }

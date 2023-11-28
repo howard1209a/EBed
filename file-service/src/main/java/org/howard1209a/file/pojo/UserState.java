@@ -1,4 +1,4 @@
-package org.howard1209a.user.pojo;
+package org.howard1209a.file.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

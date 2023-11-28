@@ -78,7 +78,7 @@
         <button type="button" onclick="submitForm()">Login</button>
     </form>
     <div class="register-link">
-        <p>Don't have an account? <a href="http://localhost:10010/register.html">Register</a></p>
+        <p>Don't have an account? <a href="http://localhost:10010/static/register.html">Register</a></p>
     </div>
 <script>
     function submitForm() {
@@ -108,7 +108,7 @@
             .then(msg => {
                 alert(msg.data);
                 // if (msg.success) {
-                //     window.location.href = 'http://localhost:10010/login.html';  // 替换为实际的登录页面路径
+                //     window.location.href = 'http://localhost:10010/static/login.html';  // 替换为实际的登录页面路径
                 // }
             })
             .catch(error => {
