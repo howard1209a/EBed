@@ -24,15 +24,15 @@ public class UploadController {
 
     @PostMapping("/img")
     public Response<String> imgUpload(MultipartFile[] images, HttpServletRequest request) {
-        Cookie cookie= Utils.getCookie("session",request);
-        imgUploadService.saveUploadedImg(images,cookie.getValue());
-
-
-        return new Response<>(true,"上传成功");
+        Cookie cookie = Utils.getCookie("session", request);
+        imgUploadService.saveUploadedImg(images, cookie.getValue());
+        return new Response<>(true, "上传成功");
     }
 
     @PostMapping("/img/description/all")
-    public Response<String> imgDescriptionAllUpload(@RequestBody List<String> descriptions) {
-        return new Response<>(true,"上传成功");
+    public Response<String> imgDescriptionAllUpload(@RequestBody List<String> descriptions, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        imgUploadService.imgDescriptionAllUpload(descriptions, cookie.getValue());
+        return new Response<>(true, "上传成功");
     }
 }

@@ -3,6 +3,16 @@ server:
 spring:
   application:
     name: gateway # 服务名称
+  redis:
+    host: 10.129.0.31
+    port: 6379
+    password: Dyp20001209
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: 100ms
   cloud:
     nacos:
       server-addr: 10.129.0.31:8848

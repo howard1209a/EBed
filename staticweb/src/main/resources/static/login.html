@@ -107,9 +107,9 @@
                 })
                 .then(msg => {
                     alert(msg.data);
-                    // if (msg.success) {
-                    //     window.location.href = 'http://localhost:10010/static/index.html';  // 替换为实际的登录页面路径
-                    // }
+                    if (msg.success) {
+                        window.location.href = 'http://localhost:10010/static/index.html';  // 替换为实际的登录页面路径
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);

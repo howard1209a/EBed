@@ -1,7 +1,6 @@
 package org.howard1209a.user.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +11,7 @@ public class RedisLockUtil {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-    public boolean tryLcok(String s) { // 非阻塞式获取锁
+    public boolean tryLock(String s) { // 非阻塞式获取锁
         Boolean success = stringRedisTemplate.opsForValue().setIfAbsent(LOCK_KEY + s, "");
         if (success) {
             return true;
@@ -25,8 +24,8 @@ public class RedisLockUtil {
         stringRedisTemplate.delete(LOCK_KEY + s);
     }
 
-    public void blockingGetLcok(String s) { // 阻塞式获取锁，低效
-        while (!tryLcok(LOCK_KEY + s)) {
+    public void blockingGetLock(String s) { // 阻塞式获取锁，低效
+        while (!tryLock(s)) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
