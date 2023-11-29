@@ -50,7 +50,7 @@ public class RegisterService {
     }
 
     public void createSession(HttpServletResponse response) {
-        int id = 12345;
+        long id = snowflakeIdUtils.nextId();
         Cookie cookie = new Cookie("session", id + "");
         cookie.setPath("/"); // cookie的path设置为/，意味着此cookie只要不跨域就可以随便共享
         response.addCookie(cookie);
