@@ -28,3 +28,4 @@ mybatis:
 logging:
   level:
     cn.itcast: debug
+

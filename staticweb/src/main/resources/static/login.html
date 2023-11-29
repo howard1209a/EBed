@@ -80,42 +80,42 @@
     <div class="register-link">
         <p>Don't have an account? <a href="http://localhost:10010/static/register.html">Register</a></p>
     </div>
-<script>
-    function submitForm() {
-        // 获取表单数据
-        var formData = {
-            userName: document.getElementById('username').value,
-            password: document.getElementById('password').value
-        };
+    <script>
+        function submitForm() {
+            // 获取表单数据
+            var formData = {
+                userName: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
 
-        // 转换为 JSON 字符串
-        var jsonData = JSON.stringify(formData);
+            // 转换为 JSON 字符串
+            var jsonData = JSON.stringify(formData);
 
-        // 发送 POST 请求
-        fetch('http://localhost:10010/user/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: jsonData
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
+            // 发送 POST 请求
+            fetch('http://localhost:10010/user/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: jsonData
             })
-            .then(msg => {
-                alert(msg.data);
-                // if (msg.success) {
-                //     window.location.href = 'http://localhost:10010/static/login.html';  // 替换为实际的登录页面路径
-                // }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-</script>
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(msg => {
+                    alert(msg.data);
+                    // if (msg.success) {
+                    //     window.location.href = 'http://localhost:10010/static/index.html';  // 替换为实际的登录页面路径
+                    // }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
 </div>
 </body>
 </html>

@@ -4,6 +4,7 @@ import org.howard1209a.file.mapper.ImgGroupMapper;
 import org.howard1209a.file.pojo.ImgGroup;
 import org.howard1209a.file.pojo.UserState;
 import org.howard1209a.file.pojo.dto.Response;
+import org.howard1209a.file.util.RedisUtil;
 import org.howard1209a.file.util.SnowflakeIdUtils;
 import org.howard1209a.file.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +22,11 @@ public class ImgGroupService {
     @Autowired
     private ImgGroupMapper imgGroupMapper;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisUtil redisUtil;
 
     public Response<String> saveGroup(String imgGroupName, Long userId, String session) {
         if (userId == null) {
-            UserState userState = (UserState) redisTemplate.opsForValue().get(USER_STATE_KEY + session);
+            UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
             userId = userState.getUserId();
         }
         ImgGroup imgGroup = new ImgGroup(snowflakeIdUtils.nextId(), imgGroupName, userId);

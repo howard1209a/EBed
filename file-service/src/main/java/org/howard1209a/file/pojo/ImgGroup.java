@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ImgGroup {
-    private long imgGroupId;
+    private Long imgGroupId;
     private String imgGroupName;
-    private long userId;
+    private Long userId;
 }

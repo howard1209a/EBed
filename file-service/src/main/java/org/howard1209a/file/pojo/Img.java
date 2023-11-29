@@ -10,10 +10,10 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Img {
-    private long imgId;
-    private long userId;
+    private Long imgId;
+    private Long userId;
     private String imgName;
-    private long groupId;
+    private Long imgGroupId;
     private String description;
     private Timestamp createTime;
 }

@@ -103,7 +103,7 @@
                 setTimeout(function () {
                     var img = document.getElementById('captchaImg');
                     img.src = 'http://localhost:10010/user/register/identifyImage'; // 替换为实际的图片 URL
-                }, 200);
+                }, 500);
             });
             document.getElementById('captchaImg').addEventListener('click', function () {
                 // 在实际项目中，你可能需要通过Ajax请求后端接口获取新的验证码图片

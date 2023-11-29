@@ -19,10 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 public class ImgGroupController {
     @Autowired
-    private ImgGroupMapper imgGroupMapper;
-    @Autowired
-    private SnowflakeIdUtils snowflakeIdUtils;
-    @Autowired
     private ImgGroupService imgGroupService;
 
     @GetMapping("create")

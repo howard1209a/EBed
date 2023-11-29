@@ -16,13 +16,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 @Slf4j
 public class T1 {
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String,Object> redisTemplate;
     @Autowired
     private RegisterMapper registerMapper;
     @Autowired
     private FileClient fileClient;
     @Test
     public void t1() {
-
+        redisTemplate.opsForHash().put("hhhhhh","firstshuxing","howard1");
+        redisTemplate.opsForHash().put("hhhhhh","secondshuxing","howard1");
     }
 }

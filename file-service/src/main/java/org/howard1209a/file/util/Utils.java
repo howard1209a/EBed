@@ -1,7 +1,11 @@
 package org.howard1209a.file.util;
 
+import org.howard1209a.file.pojo.ImgGroup;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+
+import static org.howard1209a.file.constant.FileConstant.USER_IMG_STORAGE_DIR;
 
 public class Utils {
     public static Cookie getCookie(String name, HttpServletRequest httpServletRequest) {
@@ -14,5 +18,9 @@ public class Utils {
             }
         }
         return null;
+    }
+
+    public static String getImgStoragePath(Long userId) {
+        return USER_IMG_STORAGE_DIR + userId + "/";
     }
 }

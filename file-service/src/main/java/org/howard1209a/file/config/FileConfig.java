@@ -1,5 +1,6 @@
 package org.howard1209a.file.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.howard1209a.file.util.SnowflakeIdUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,8 +29,14 @@ public class FileConfig {
         // 返回
         return template;
     }
+
     @Bean
     public SnowflakeIdUtils snowflakeIdUtils() {
         return new SnowflakeIdUtils(3, 1);
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }

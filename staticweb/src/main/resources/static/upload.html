@@ -214,7 +214,7 @@
     const fileNamesMap = new Map();
 
     // 用于存储每个图片的描述
-    const imageDescriptions = [];
+    var imageDescriptions = [];
 
     function previewImages() {
         const fileInput = document.getElementById('fileInput');
@@ -237,13 +237,16 @@
                     const fileName = fileInput.files[i].name;
                     imageName.textContent = fileName;
 
+                    // 在imageDescriptions中插入一个空字符串作为默认描述
+                    imageDescriptions.push('');
+
                     const addDescriptionBtn = document.createElement('button');
                     addDescriptionBtn.className = 'add-description-btn';
                     addDescriptionBtn.textContent = '添加描述';
                     addDescriptionBtn.addEventListener('click', function () {
+                        // 将用户输入的描述覆盖默认描述
                         const description = prompt('请输入图片描述', '');
-                        // 将描述存储到数组中
-                        imageDescriptions.push(description || ''); // 如果用户点击取消，则存储空字符串
+                        imageDescriptions[i] = description || ''; // 如果用户点击取消，则保持原来的描述
                     });
 
                     deleteOption.addEventListener('click', function () {
@@ -255,6 +258,9 @@
 
                         // Remove the preview elements
                         previewContainer.removeChild(imagePreview);
+
+                        // 从imageDescriptions中移除对应的描述
+                        imageDescriptions.splice(i, 1);
                     });
 
                     reader.onload = function (e) {
@@ -296,7 +302,6 @@
         })
             .then(response => response.json())
             .then(msg => {
-                alert(msg.data);
                 if (msg.success) {
                     // 清空已上传文件列表和图片预览
                     uploadedFiles = [];
@@ -311,10 +316,10 @@
                         body: JSON.stringify(imageDescriptions),
                     })
                         .then(response => response.json())
-                        .then(data => {
-                            console.log('后端返回的数据:', data);
+                        .then(msg => {
+                            alert(msg.data);
                             // 清空数组，准备下一次上传
-                            imageDescriptions.length = 0;
+                            imageDescriptions=[];
                         })
                         .catch(error => {
                             console.error('上传图片描述失败:', error);

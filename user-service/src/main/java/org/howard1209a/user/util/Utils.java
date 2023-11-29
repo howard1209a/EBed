@@ -1,5 +1,7 @@
 package org.howard1209a.user.util;
 
+import org.springframework.stereotype.Component;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
