@@ -1,5 +1,6 @@
 package org.howard1209a.user.service;
 
+import org.howard1209a.user.mapper.LoginMapper;
 import org.howard1209a.user.mapper.RegisterMapper;
 import org.howard1209a.user.pojo.User;
 import org.howard1209a.user.pojo.UserState;
@@ -19,6 +20,8 @@ public class LoginService {
     @Autowired
     private RegisterMapper registerMapper;
     @Autowired
+    private LoginMapper loginMapper;
+    @Autowired
     private RedisUtil redisUtil;
 
     public Response<String> loginCheck(LoginDto loginDto, String session) {
@@ -32,5 +35,11 @@ public class LoginService {
         // 更新session
         redisUtil.setObject(USER_STATE_KEY + session, new UserState(null, true, user.getUserId(), null));
         return new Response<>(true, "登陆成功");
+    }
+
+    public Response<String> getUserInfo(String session) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        User user = loginMapper.findUserById(userState.getUserId());
+        return new Response<>(true, user.getUserName());
     }
 }

@@ -13,6 +13,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
+import java.util.List;
+
 @SpringBootTest(classes = FileApplication.class)
 @RunWith(SpringRunner.class)
 @Slf4j
@@ -24,20 +27,8 @@ public class T1 {
     @Autowired
     private ObjectMapper objectMapper;
     @Test
-    public void t1() {
-        stringRedisTemplate.opsForValue().set("1","{\n" +
-                "    \"identifyImageNumber\": null,\n" +
-                "    \"userId\": 1178833045436903424,\n" +
-                "    \"lastUploadedImgId\": null,\n" +
-                "    \"login\": true\n" +
-                "}");
-        String s = stringRedisTemplate.opsForValue().get("1");
-        UserState userState;
-        try {
-            userState = objectMapper.readValue(s, UserState.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println(userState);
+    public void t1() throws JsonProcessingException {
+        List<String> list = Arrays.asList("1", "2");
+        System.out.println(objectMapper.writeValueAsString(list));
     }
 }

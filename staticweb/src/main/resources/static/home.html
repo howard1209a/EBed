@@ -51,15 +51,43 @@
         h1 {
             color: #333;
         }
+
+        .user-info {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 200px; /* 与侧边栏宽度保持一致 */
+            background-color: #888888; /* 栏目背景颜色 */
+            padding: 20px; /* 内边距 */
+            text-align: center;
+            font-size: 14px;
+            color: #ffffff; /* 字体颜色 */
+        }
+
+        .logout-btn {
+            cursor: pointer;
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: #fff; /* 按钮文字颜色 */
+            border: none;
+            padding: 5px 10px; /* 按钮内边距 */
+            margin-top: 10px;
+            border-radius: 5px; /* 圆角边框 */
+            display: inline-block;
+            transition: background-color 0.3s ease; /* 颜色变化过渡效果 */
+        }
+
+        .logout-btn:hover {
+            background-color: #0056b3; /* 按钮在悬停时的背景颜色 */
+        }
     </style>
 </head>
 <body>
 <div id="container">
     <div id="sidebar">
-        <div class="menu-item" onclick="navigateTo('upload.html')">
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/upload.html')">
             <i class="fas fa-cloud-upload-alt"></i> 图片上传
         </div>
-        <div class="menu-item" onclick="navigateTo('my-gallery.html')">
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/warehouse.html')">
             <i class="fas fa-images"></i> 我的图库
         </div>
         <div class="menu-item" onclick="navigateTo('explore.html')">
@@ -68,6 +96,11 @@
         <div class="menu-item" onclick="navigateTo('profile.html')">
             <i class="fas fa-user"></i> 个人中心
         </div>
+        <div class="user-info">
+            <!-- 在这里显示用户信息，例如用户名、头像等 -->
+            用户名
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
     </div>
 
     <div id="content">
@@ -75,6 +108,20 @@
         <!-- 主要内容区域 -->
     </div>
 </div>
+
+<script>
+    function logout() {
+        // 清空所有 cookie
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c
+                .replace(/^ +/, "")
+                .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        // 重定向到登录页面
+        window.location.href = "http://localhost:10010/static/login.html"; // 请替换为你的登录页面地址
+    }
+</script>
 
 <script>
     function navigateTo(page) {

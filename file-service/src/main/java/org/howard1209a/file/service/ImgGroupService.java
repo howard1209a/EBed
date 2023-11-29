@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.howard1209a.file.constant.FileConstant.USER_STATE_KEY;
 
 @Service
@@ -37,5 +40,15 @@ public class ImgGroupService {
         } else {
             return new Response<>(false, "分组名重复");
         }
+    }
+
+    public Response<List<String>> getAllImgGroupName(String session) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        List<ImgGroup> imgGroups = imgGroupMapper.queryAllImgGroupByUserId(userState.getUserId());
+        List<String> data = new ArrayList<>();
+        for (ImgGroup imgGroup : imgGroups) {
+            data.add(imgGroup.getImgGroupName());
+        }
+        return new Response<>(true, data);
     }
 }

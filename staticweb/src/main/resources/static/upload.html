@@ -191,17 +191,17 @@
         }
 
         .logout-btn:hover {
-            background-color: #0056b3; /* 按钮在悬停时的背景颜色 */
+            background-color: #ff5c5c; /* 按钮在悬停时的背景颜色 */
         }
     </style>
 </head>
 <body>
 <div id="container">
     <div id="sidebar">
-        <div class="menu-item" onclick="navigateTo('upload.html')">
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/upload.html')">
             <i class="fas fa-cloud-upload-alt"></i> 图片上传
         </div>
-        <div class="menu-item" onclick="navigateTo('my-gallery.html')">
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/warehouse.html')">
             <i class="fas fa-images"></i> 我的图库
         </div>
         <div class="menu-item" onclick="navigateTo('explore.html')">
@@ -212,7 +212,7 @@
         </div>
         <div class="user-info">
             <!-- 在这里显示用户信息，例如用户名、头像等 -->
-            用户名
+            <div class="user-info-inner"></div>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -231,6 +231,21 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 页面加载时发送 fetch 请求获取用户名
+        fetch('http://localhost:10010/user/login/userInfo')
+            .then(response => response.json())
+            .then(msg => {
+                // 更新 user-info 标签的内容
+                document.querySelector('.user-info-inner').innerHTML = msg.data;
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+            });
+    });
+</script>
 
 <script>
     function logout() {

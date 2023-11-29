@@ -6,10 +6,7 @@ import org.howard1209a.user.pojo.dto.Response;
 import org.howard1209a.user.service.LoginService;
 import org.howard1209a.user.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -25,5 +22,11 @@ public class LoginController {
     public Response<String> login(@RequestBody LoginDto loginDto, HttpServletRequest request) {
         Cookie cookie = Utils.getCookie("session", request);
         return loginService.loginCheck(loginDto, cookie.getValue());
+    }
+
+    @GetMapping("userInfo")
+    public Response<String> userInfo(HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        return loginService.getUserInfo(cookie.getValue());
     }
 }

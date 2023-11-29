@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/file/imgGroup")
@@ -25,5 +26,11 @@ public class ImgGroupController {
     public Response<String> createImgGroup(@RequestParam("imgGroupName") String imgGroupName, @RequestParam(value = "userId", required = false) Long userId, HttpServletRequest httpServletRequest) {
         Cookie cookie = Utils.getCookie("session", httpServletRequest);
         return imgGroupService.saveGroup(imgGroupName, userId, cookie.getValue());
+    }
+
+    @GetMapping("info")
+    public Response<List<String>> imgGroupInfo(HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        return imgGroupService.getAllImgGroupName(cookie.getValue());
     }
 }
