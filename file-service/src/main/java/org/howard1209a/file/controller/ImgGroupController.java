@@ -33,4 +33,10 @@ public class ImgGroupController {
         Cookie cookie = Utils.getCookie("session", request);
         return imgGroupService.getAllImgGroupName(cookie.getValue());
     }
+
+    @GetMapping("delete")
+    public void deleteImgGroup(@RequestParam("imgGroupName") String imgGroupName, HttpServletRequest httpServletRequest) {
+        Cookie cookie = Utils.getCookie("session", httpServletRequest);
+        imgGroupService.deleteGroup(imgGroupName, cookie.getValue());
+    }
 }

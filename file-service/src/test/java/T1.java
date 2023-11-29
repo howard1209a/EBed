@@ -3,6 +3,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.howard1209a.file.FileApplication;
 import org.howard1209a.file.mapper.ImgGroupMapper;
+import org.howard1209a.file.mapper.ImgMapper;
 import org.howard1209a.file.pojo.Img;
 import org.howard1209a.file.pojo.ImgGroup;
 import org.howard1209a.file.pojo.UserState;
@@ -23,12 +24,13 @@ public class T1 {
     @Autowired
     private ImgGroupMapper imgGroupMapper;
     @Autowired
+    private ImgMapper imgMapper;
+    @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private ObjectMapper objectMapper;
     @Test
     public void t1() throws JsonProcessingException {
-        List<String> list = Arrays.asList("1", "2");
-        System.out.println(objectMapper.writeValueAsString(list));
+        System.out.println(imgMapper.countImgForGroup(1179410526581698560l,"默认分组"));
     }
 }

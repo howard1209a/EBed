@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>图床网站</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- 在头部添加 SweetAlert2 样式和脚本链接 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -120,20 +123,68 @@
         }
 
         /* 删除分组按钮的样式 */
-        .delete-group-btn {
+        #delete-group-btn {
             cursor: pointer;
             background-color: #007bff; /* 按钮背景颜色 */
             color: #fff; /* 按钮文字颜色 */
             border: none;
             padding: 5px 10px; /* 按钮内边距 */
-            margin-left: 5px; /* 为了与分组紧凑排列，可根据需要调整间距 */
+            margin-top: 20px;
             border-radius: 5px; /* 圆角边框 */
             display: inline-block;
             transition: background-color 0.3s ease; /* 颜色变化过渡效果 */
         }
 
-        .delete-group-btn:hover {
+        #delete-group-btn:hover {
             background-color: #ff5c5c; /* 按钮在悬停时的背景颜色 */
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-gap: 10px;
+            margin-top: 20px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end; /* Align pagination to the right */
+            align-items: center;
+        }
+
+        .page-link {
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            color: #007bff;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .page-link:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .active {
+            background-color: #007bff;
+            color: #fff;
         }
 
     </style>
@@ -161,19 +212,23 @@
     </div>
 
     <div id="content">
-        <div class="navbar" id="navbar">
-            <div class="navbar-item" onclick="navigateToGroup()">分组1</div>
-            <div class="navbar-item" onclick="navigateToGroup()">分组2</div>
-            <div class="navbar-item" onclick="navigateToGroup()">分组3</div>
+        <div class="navbar" id="navbar"></div>
+
+        <div class="controls">
+            <div class="buttons-container">
+                <button id="create-group-btn" onclick="createNewGroup()">新建分组</button>
+                <button id="delete-group-btn" onclick="deleteGroup()">删除分组</button>
+            </div>
+            <div id="pagination" class="pagination">
+                <!-- 分页组件将添加到这里 -->
+            </div>
         </div>
 
-        <!-- 新建分组按钮 -->
-        <button id="create-group-btn" onclick="createNewGroup()">新建分组</button>
-
-        <!-- 删除分组按钮 -->
-        <button class="delete-group-btn" onclick="deleteGroup()">删除分组</button>
 
         <!-- 主要内容区域 -->
+        <div class="image-grid" id="image-grid-container">
+            <!-- 图像网格容器，用于显示图片 -->
+        </div>
     </div>
 </div>
 
@@ -190,6 +245,24 @@
                 console.error('Error fetching username:', error);
             });
         // 页面加载时发送 fetch 请求获取所有分组名称
+        updateGroups();
+    });
+</script>
+
+<script>
+    // 假设后端返回的图片信息数组
+    const imagesForGroup = [
+        { name: 'Image1', url: '/Users/howard1209a/Desktop/image1.jpeg', group: 'Group1' },
+        { name: 'Image2', url: '/Users/howard1209a/Desktop/image2.jpeg', group: 'Group1' },
+        { name: 'Image3', url: '/Users/howard1209a/Desktop/image3.jpeg', group: 'Group2' },
+        { name: 'Image4', url: '/Users/howard1209a/Desktop/image4.jpeg', group: 'Group3' },
+        // ... 其他图片数据
+    ];
+    // 分页组件的相关变量
+    const itemsPerPage = 12; // 每页显示的图片数量
+    let currentPage = 1; // 当前页码
+
+    function updateGroups() {
         fetch('http://localhost:10010/file/imgGroup/info')
             .then(response => response.json())
             .then(msg => {
@@ -210,10 +283,8 @@
             .catch(error => {
                 console.error('Error fetching groups:', error);
             });
-    });
-</script>
+    }
 
-<script>
     function logout() {
         // 清空所有 cookie
         document.cookie.split(";").forEach((c) => {
@@ -240,14 +311,177 @@
     }
 
     function createNewGroup() {
-        // 在这里添加新建分组的逻辑，可以是弹出对话框或跳转到新建分组页面等
-        alert("新建分组按钮被点击！");
+        // 使用 SweetAlert2 弹出框，添加 input 选项，使用户可以输入新建分组的名称
+        Swal.fire({
+            title: '请输入新建分组的名称',
+            input: 'text',
+            inputPlaceholder: '分组名称',
+            showCancelButton: true,
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputValidator: (value) => {
+                return new Promise((resolve) => {
+                    if (!value) {
+                        resolve('请输入分组名称');
+                    } else {
+                        resolve();
+                    }
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // 用户点击了确定，执行新建分组的逻辑
+                const groupName = result.value;
+                // 如果用户点击了确定并输入了分组名称
+                // 发送请求到后端，将新建分组的名称传递给后端
+                const url = `http://localhost:10010/file/imgGroup/create?imgGroupName=${encodeURIComponent(groupName)}`;
+                fetch(url)
+                    .then(response => response.json())
+                    .then(msg => {
+                        if (msg.success) {
+                            updateGroups();
+                        } else {
+                            alert(msg.data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error creating new group:', error);
+                    });
+            }
+        });
     }
 
     function deleteGroup() {
-        // 在这里添加删除分组的逻辑
-        alert("删除分组按钮被点击！");
+        const groups = [];
+        fetch('http://localhost:10010/file/imgGroup/info')
+            .then(response => response.json())
+            .then(msg => {
+                msg.data.forEach(group => {
+                    if (group != "默认分组") {
+                        groups.push(group);
+                    }
+                });
+                // 将分组名称作为选项，用于显示在 SweetAlert2 弹出框中
+                const options = {};
+                groups.forEach((group, index) => {
+                    options[index] = group;
+                });
+
+                console.log(options);
+
+                // 使用 SweetAlert2 弹出框，添加 input 选项，使用户可以选择要删除的分组
+                Swal.fire({
+                    title: '请选择要删除的分组',
+                    input: 'select',
+                    inputOptions: options,
+                    inputPlaceholder: '请选择',
+                    showCancelButton: true,
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    inputValidator: (value) => {
+                        return new Promise((resolve) => {
+                            if (value === '') {
+                                resolve('请选择一个分组');
+                            } else {
+                                resolve();
+                            }
+                        });
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // 用户点击了确定，执行删除分组的逻辑
+                        const selectedGroup = groups[result.value];
+                        console.log('用户选择删除分组:', selectedGroup);
+
+                        // 在这里执行删除分组的相关代码，例如发起删除请求到后端
+                        const url = `http://localhost:10010/file/imgGroup/delete?imgGroupName=${encodeURIComponent(selectedGroup)}`;
+                        fetch(url)
+                            .then(() => {
+                                updateGroups();
+                            })
+                            .catch(error => {
+                                console.error('Error creating new group:', error);
+                            });
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching groups:', error);
+            });
     }
+
+    // 更新图像网格的函数
+    function updateImageGrid(groupName) {
+        // 获取图像网格容器
+        const imageGridContainer = document.getElementById('image-grid-container');
+        // 清空图像网格容器
+        imageGridContainer.innerHTML = '';
+
+        // 计算当前页码对应的图片数组的起始索引和结束索引
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+
+        // 遍历图片信息数组，为每个图片创建一个 img 标签
+        imagesForGroup.slice(startIndex, endIndex).forEach((image, index) => {
+            // 如果指定了 groupName，则只显示属于该分组的图片
+            if (!groupName || image.group === groupName) {
+                // 创建 img 标签
+                const imgElement = document.createElement('img');
+                imgElement.src = image.url;
+                imgElement.alt = image.name;
+
+                // 添加 img 标签到图像网格容器
+                imageGridContainer.appendChild(imgElement);
+
+                // 如果是每行的最后一个图片，则添加一个换行符
+                if ((index + 1) % 6 === 0) {
+                    imageGridContainer.appendChild(document.createElement('br'));
+                }
+            }
+        });
+
+        // 更新分页组件
+        updatePagination();
+    }
+
+    // 更新分页组件的函数
+    function updatePagination() {
+        const paginationContainer = document.getElementById('pagination');
+        // 计算总页数
+        const totalPageCount = Math.ceil(imagesForGroup.length / itemsPerPage);
+
+        // 清空分页组件容器
+        paginationContainer.innerHTML = '';
+
+        // 创建并添加分页按钮
+        for (let i = 1; i <= totalPageCount; i++) {
+            const pageLink = document.createElement('a');
+            pageLink.classList.add('page-link');
+            pageLink.textContent = i;
+            pageLink.href = '#'; // 阻止默认跳转行为
+            pageLink.onclick = () => {
+                currentPage = i;
+                updateImageGrid();
+            };
+
+            if (i === currentPage) {
+                pageLink.classList.add('active');
+            }
+
+            paginationContainer.appendChild(pageLink);
+        }
+    }
+
+    // // 示例：点击分组按钮时更新图像网格
+    // function navigateToGroup(event) {
+    //     const groupName = event.target.textContent;
+    //     updateImageGrid(groupName);
+    // }
+
+    // 示例：页面加载时显示所有图片
+    window.onload = function() {
+        updateImageGrid();
+    };
 </script>
 <script>
     function navigateTo(page) {

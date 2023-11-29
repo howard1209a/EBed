@@ -51,4 +51,9 @@ public class ImgGroupService {
         }
         return new Response<>(true, data);
     }
+
+    public void deleteGroup(String imgGroupName, String session) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        imgGroupMapper.deleteImgGroup(imgGroupName, userState.getUserId());
+    }
 }
