@@ -204,7 +204,7 @@
         <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/warehouse.html')">
             <i class="fas fa-images"></i> 我的图库
         </div>
-        <div class="menu-item" onclick="navigateTo('explore.html')">
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/browse.html')">
             <i class="fas fa-globe"></i> 浏览广场
         </div>
         <div class="menu-item" onclick="navigateTo('profile.html')">
@@ -263,6 +263,7 @@
 
 <script>
     let uploadedFiles = [];
+    let maxUploadedFilesOneTime = 100;
 
     function navigateTo(page) {
         window.location.href = page;
@@ -284,7 +285,7 @@
 
         if (fileInput.files) {
             for (let i = 0; i < fileInput.files.length; i++) {
-                if (uploadedFiles.length < 9) {
+                if (uploadedFiles.length < maxUploadedFilesOneTime) {
                     const reader = new FileReader();
                     const imagePreview = document.createElement('div');
                     imagePreview.className = 'image-preview';
@@ -341,7 +342,7 @@
                     imagePreview.appendChild(addDescriptionBtn);
                     previewContainer.appendChild(imagePreview);
                 } else {
-                    alert('最多只能上传 9 张图片');
+                    alert('最多只能上传 ' + maxUploadedFilesOneTime + ' 张图片');
                     break; // 阻止继续添加图片
                 }
             }

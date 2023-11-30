@@ -79,6 +79,10 @@
         .logout-btn:hover {
             background-color: #0056b3; /* 按钮在悬停时的背景颜色 */
         }
+
+        .additional-content {
+            font-size: 80px; /* 根据需要设置字体大小 */
+        }
     </style>
 </head>
 <body>
@@ -108,6 +112,41 @@
         <!-- 主要内容区域 -->
     </div>
 </div>
+
+<script>
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    function loadMoreContent() {
+        const additionalContent = `<div class="additional-content">${"<p>加载更多内容。</p>".repeat(itemsPerPage)}</div>`;
+        document.getElementById("content").innerHTML += additionalContent;
+        currentPage++;
+    }
+
+    function checkScroll() {
+        const content = document.getElementById("content");
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const contentBottom = content.offsetTop + content.offsetHeight;
+
+        if (scrollPosition >= contentBottom) {
+            loadMoreContent();
+        }
+    }
+
+    window.addEventListener('scroll', debounce(checkScroll, 200));
+
+    function debounce(func, delay) {
+        let timeout;
+        return function () {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                func.apply(context, args);
+            }, delay);
+        };
+    }
+</script>
 
 <script>
     function logout() {
