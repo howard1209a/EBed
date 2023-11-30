@@ -187,6 +187,51 @@
             color: #fff;
         }
 
+        /* 新添加的样式 */
+        /* 修改或添加的样式 */
+        .image-container {
+            text-align: center; /* 居中文本 */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 垂直居中 */
+        }
+
+        .image-container img {
+            width: 100%; /* 图片宽度充满容器 */
+            height: auto; /* 保持高度自适应 */
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .details-container {
+            background-color: #333; /* 深灰色背景颜色 */
+            border-radius: 0 0 8px 8px; /* 底部圆角 */
+            margin-top: -8px; /* 上方间距，使底部圆角与图片顶部对齐 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%; /* 让 details-container 宽度与图片相同 */
+        }
+
+        .details-container p {
+            margin: 0; /* 清除默认的 p 标签外边距 */
+            color: #fff; /* 白色文字 */
+            font-size: 14px; /* 文字大小 */
+        }
+
+        .details-container button {
+            cursor: pointer;
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: #fff; /* 按钮文字颜色 */
+            border: none;
+            padding: 5px 10px; /* 按钮内边距 */
+            border-radius: 5px; /* 圆角边框 */
+            transition: background-color 0.3s ease; /* 颜色变化过渡效果 */
+        }
+
+        .details-container button:hover {
+            background-color: #0056b3; /* 按钮在悬停时的背景颜色 */
+        }
     </style>
 </head>
 <body>
@@ -250,17 +295,15 @@
 </script>
 
 <script>
-    // 假设后端返回的图片信息数组
-    const imagesForGroup = [
-        { name: 'Image1', url: '/Users/howard1209a/Desktop/image1.jpeg', group: 'Group1' },
-        { name: 'Image2', url: '/Users/howard1209a/Desktop/image2.jpeg', group: 'Group1' },
-        { name: 'Image3', url: '/Users/howard1209a/Desktop/image3.jpeg', group: 'Group2' },
-        { name: 'Image4', url: '/Users/howard1209a/Desktop/image4.jpeg', group: 'Group3' },
-        // ... 其他图片数据
+    let imgPaginationForGroup = [
+        {imgName: 'Image1', url: 'http', description: '描述', createTime: ""}
     ];
     // 分页组件的相关变量
-    const itemsPerPage = 12; // 每页显示的图片数量
+    const row = 3;
+    const column = 4;
+    const itemsPerPage = row * column; // 每页显示的图片数量
     let currentPage = 1; // 当前页码
+    let currentGroup = "默认分组"; // 当前分组名
 
     function updateGroups() {
         fetch('http://localhost:10010/file/imgGroup/info')
@@ -308,6 +351,18 @@
 
         // 设置被点击项的高亮显示
         event.target.classList.add('active');
+
+        const groupName = event.target.textContent;
+
+        currentGroup = groupName;
+
+        // 更新分页组件
+        updatePagination(groupName);
+
+        // 默认显示“默认分组”的第一页
+        currentGroup = "默认分组";
+        currentPage = 1;
+        updateImageGrid();
     }
 
     function createNewGroup() {
@@ -411,77 +466,133 @@
     }
 
     // 更新图像网格的函数
-    function updateImageGrid(groupName) {
-        // 获取图像网格容器
-        const imageGridContainer = document.getElementById('image-grid-container');
-        // 清空图像网格容器
-        imageGridContainer.innerHTML = '';
-
+    function updateImageGrid() {
         // 计算当前页码对应的图片数组的起始索引和结束索引
         const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
+        const length = itemsPerPage;
 
-        // 遍历图片信息数组，为每个图片创建一个 img 标签
-        imagesForGroup.slice(startIndex, endIndex).forEach((image, index) => {
-            // 如果指定了 groupName，则只显示属于该分组的图片
-            if (!groupName || image.group === groupName) {
-                // 创建 img 标签
-                const imgElement = document.createElement('img');
-                imgElement.src = image.url;
-                imgElement.alt = image.name;
+        const data = {
+            startIndex: startIndex,
+            length: length,
+            imgGroupName: currentGroup
+        };
 
-                // 添加 img 标签到图像网格容器
-                imageGridContainer.appendChild(imgElement);
+        fetch("http://localhost:10010/file/img/pagination", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data), // 将参数转换为 JSON 字符串
+        })
+            .then(response => response.json())
+            .then(msg => {
+                // 获取图像网格容器
+                const imageGridContainer = document.getElementById('image-grid-container');
+                // 清空图像网格容器
+                imageGridContainer.innerHTML = '';
 
-                // 如果是每行的最后一个图片，则添加一个换行符
-                if ((index + 1) % 6 === 0) {
-                    imageGridContainer.appendChild(document.createElement('br'));
+                imgPaginationForGroup = msg.data
+                let index = 0;
+                // 遍历图片信息数组，为每个图片创建一个 img 标签
+                imgPaginationForGroup.forEach(img => {
+                    // 创建一个容器 div 元素
+                    const containerElement = document.createElement('div');
+                    containerElement.classList.add('image-container');
+
+                    // 创建 img 标签
+                    const imgElement = document.createElement('img');
+                    imgElement.src = img.url;
+                    imgElement.alt = img.imgName;
+
+                    // 创建包含图片名和查看详情按钮的 div 元素
+                    const detailsElement = document.createElement('div');
+                    detailsElement.classList.add('details-container');
+
+                    // 创建 p 标签用于显示图片名字
+                    const imgNameElement = document.createElement('p');
+                    imgNameElement.textContent = img.imgName.substring(0, 10);
+
+                    // 创建查看详情按钮
+                    const detailsButton = document.createElement('button');
+                    detailsButton.textContent = '查看详情';
+                    detailsButton.onclick = () => showDetails(img); // 假设有一个 showDetails 函数用于处理按钮点击事件
+
+                    // 将 img 和 p 标签添加到容器 div 元素
+                    containerElement.appendChild(imgElement);
+
+                    // 将 imgNameElement 和 detailsButton 添加到 detailsElement
+                    detailsElement.appendChild(imgNameElement);
+                    detailsElement.appendChild(detailsButton);
+
+                    // 将 detailsElement 添加到容器 div 元素
+                    containerElement.appendChild(detailsElement);
+
+                    // 添加容器元素到图像网格容器
+                    imageGridContainer.appendChild(containerElement);
+
+                    // 如果是每行的最后一个图片，则添加一个换行符
+                    if ((index + 1) % column === 0) {
+                        imageGridContainer.appendChild(document.createElement('br'));
+                    }
+                    index++;
+                });
+
+                function showDetails(img) {
+                    // 在这里处理点击查看详情按钮后的逻辑，例如显示图片详情的模态框等
+                    console.log(img);
                 }
-            }
-        });
-
-        // 更新分页组件
-        updatePagination();
+            })
+            .catch(error => {
+                // 处理错误
+                console.error('There was a problem with the fetch operation:', error);
+            });
     }
 
     // 更新分页组件的函数
-    function updatePagination() {
-        const paginationContainer = document.getElementById('pagination');
-        // 计算总页数
-        const totalPageCount = Math.ceil(imagesForGroup.length / itemsPerPage);
+    function updatePagination(groupName) {
+        const url = `http://localhost:10010/file/img/count?imgGroupName=${encodeURIComponent(groupName)}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(msg => {
+                const paginationContainer = document.getElementById('pagination');
+                // 计算总页数
+                const totalPageCount = Math.ceil(msg.data / itemsPerPage);
+                // 清空分页组件容器
+                paginationContainer.innerHTML = '';
 
-        // 清空分页组件容器
-        paginationContainer.innerHTML = '';
+                // 创建并添加分页按钮
+                for (let i = 1; i <= totalPageCount; i++) {
+                    const pageLink = document.createElement('a');
+                    pageLink.classList.add('page-link');
+                    pageLink.textContent = i;
+                    pageLink.href = '#'; // 阻止默认跳转行为
+                    if (i == 1) {
+                        pageLink.classList.add('active');
+                    } else {
+                        pageLink.classList.remove('active');
+                    }
+                    pageLink.onclick = () => {
+                        currentPage = i;
+                        // 取消其他链接的高亮显示
+                        Array.from(paginationContainer.children).forEach(link => {
+                            link.classList.remove('active');
+                        });
+                        // 设置被点击的链接高亮显示
+                        event.target.classList.add('active');
+                        updateImageGrid();
+                    };
 
-        // 创建并添加分页按钮
-        for (let i = 1; i <= totalPageCount; i++) {
-            const pageLink = document.createElement('a');
-            pageLink.classList.add('page-link');
-            pageLink.textContent = i;
-            pageLink.href = '#'; // 阻止默认跳转行为
-            pageLink.onclick = () => {
-                currentPage = i;
-                updateImageGrid();
-            };
+                    if (i === currentPage) {
+                        pageLink.classList.add('active');
+                    }
 
-            if (i === currentPage) {
-                pageLink.classList.add('active');
-            }
-
-            paginationContainer.appendChild(pageLink);
-        }
+                    paginationContainer.appendChild(pageLink);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching groups:', error);
+            });
     }
-
-    // // 示例：点击分组按钮时更新图像网格
-    // function navigateToGroup(event) {
-    //     const groupName = event.target.textContent;
-    //     updateImageGrid(groupName);
-    // }
-
-    // 示例：页面加载时显示所有图片
-    window.onload = function() {
-        updateImageGrid();
-    };
 </script>
 <script>
     function navigateTo(page) {

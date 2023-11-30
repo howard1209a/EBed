@@ -1,4 +1,4 @@
-package org.howard1209a.file.pojo;
+package org.howard1209a.file.pojo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,12 +9,9 @@ import java.sql.Timestamp;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Img {
-    private Long imgId;
-    private Long userId;
+public class ImgDto {
     private String imgName;
-    private Long imgGroupId;
+    private String url;
     private String description;
     private Timestamp createTime;
-    private String imgType;
 }

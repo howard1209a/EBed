@@ -31,6 +31,7 @@ public class T1 {
     private ObjectMapper objectMapper;
     @Test
     public void t1() throws JsonProcessingException {
-        System.out.println(imgMapper.countImgForGroup(1179410526581698560l,"默认分组"));
+        List<Img> list = imgMapper.paginationImgForGroup(1179410526581698560l, "默认分组", 0, 5);
+        System.out.println("");
     }
 }

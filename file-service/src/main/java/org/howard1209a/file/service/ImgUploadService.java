@@ -43,7 +43,8 @@ public class ImgUploadService {
         for (MultipartFile image : images) {
             // 存入mysql
             String fileName = image.getOriginalFilename();
-            Img img = new Img(snowflakeIdUtils.nextId(), userId, fileName, imgGroupId, null, null);
+            String[] split = fileName.split("\\.");
+            Img img = new Img(snowflakeIdUtils.nextId(), userId, split[0], imgGroupId, null, null, split[1]);
             lastUploadedImgId.add(img.getImgId());
             imgMapper.saveImg(img);
             // 存入磁盘
@@ -51,7 +52,7 @@ public class ImgUploadService {
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            fileName = img.getImgId() + "." + fileName.split("\\.")[1];
+            fileName = img.getImgId() + "." + img.getImgType();
             File file = new File(Utils.getImgStoragePath(userId) + fileName);
             try {
                 file.createNewFile();
