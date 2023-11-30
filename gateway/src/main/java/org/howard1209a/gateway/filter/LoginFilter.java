@@ -34,7 +34,8 @@ public class LoginFilter implements GlobalFilter {
                 "http://localhost:10010/static/login.html",
                 "http://localhost:10010/static/register.html",
                 "http://localhost:10010/user/login",
-                "http://localhost:10010/user/register");
+                "http://localhost:10010/user/register",
+                "http://localhost:10010/file/img/download");
         for (String prefix : excludeUrl) {
             if (request.getURI().toString().startsWith(prefix)) {
                 return chain.filter(exchange);

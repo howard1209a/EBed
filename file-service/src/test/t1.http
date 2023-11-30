@@ -1,8 +1,16 @@
-GET http://localhost:10010/file/img/download/1179781839955570688.jpeg
-Accept: application/json
+POST http://localhost:10010/file/img/modify
+Content-Type: application/json
 Cookie: Idea-aef4b63f=7487860a-76a2-48ee-b8cc-123a8d20f97c; session=1179726837329309696
 
+{
+  "newName": "早安",
+  "newDescription": "清晨的风景",
+  "newGroupName": "风景",
+  "imgId": 1179871294326452224
+}
+
 ###
+
 
 
 ###

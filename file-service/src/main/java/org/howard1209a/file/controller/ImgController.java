@@ -3,6 +3,7 @@ package org.howard1209a.file.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.howard1209a.file.pojo.Img;
 import org.howard1209a.file.pojo.dto.ImgDto;
+import org.howard1209a.file.pojo.dto.ImgModifyDto;
 import org.howard1209a.file.pojo.dto.ImgPaginationDto;
 import org.howard1209a.file.pojo.dto.Response;
 import org.howard1209a.file.service.ImgService;
@@ -38,5 +39,11 @@ public class ImgController {
     public void downImg(@PathVariable("imgFileName") String imgFileName, HttpServletRequest request, HttpServletResponse response) {
         Cookie cookie = Utils.getCookie("session", request);
         imgService.download(response, imgFileName, cookie.getValue());
+    }
+
+    @PostMapping("/modify")
+    void modifyImg(@RequestBody ImgModifyDto imgModifyDto,HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        imgService.modifyImg(imgModifyDto,cookie.getValue());
     }
 }

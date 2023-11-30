@@ -204,7 +204,7 @@
         }
 
         .details-container {
-            background-color: #333; /* 深灰色背景颜色 */
+            background-color: #888888; /* 深灰色背景颜色 */
             border-radius: 0 0 8px 8px; /* 底部圆角 */
             margin-top: -8px; /* 上方间距，使底部圆角与图片顶部对齐 */
             display: flex;
@@ -232,6 +232,7 @@
         .details-container button:hover {
             background-color: #0056b3; /* 按钮在悬停时的背景颜色 */
         }
+
     </style>
 </head>
 <body>
@@ -295,9 +296,7 @@
 </script>
 
 <script>
-    let imgPaginationForGroup = [
-        {imgName: 'Image1', url: 'http', description: '描述', createTime: ""}
-    ];
+    let imgPaginationForGroup = [];
     // 分页组件的相关变量
     const row = 3;
     const column = 4;
@@ -312,7 +311,6 @@
                 // 创建并显示每个分组
                 const navbar = document.getElementById('navbar');
                 navbar.innerHTML = '';
-                console.log(msg.data)
 
                 msg.data.forEach(group => {
                     const groupElement = document.createElement('div');
@@ -360,7 +358,7 @@
         updatePagination(groupName);
 
         // 默认显示“默认分组”的第一页
-        currentGroup = "默认分组";
+        currentGroup = groupName;
         currentPage = 1;
         updateImageGrid();
     }
@@ -513,6 +511,11 @@
                     imgNameElement.textContent = img.imgName.substring(0, 10);
 
                     // 创建查看详情按钮
+                    const editButton = document.createElement('button');
+                    editButton.textContent = '图片编辑';
+                    editButton.onclick = () => editImg(img); // 假设有一个 showDetails 函数用于处理按钮点击事件
+
+                    // 创建查看详情按钮
                     const detailsButton = document.createElement('button');
                     detailsButton.textContent = '查看详情';
                     detailsButton.onclick = () => showDetails(img); // 假设有一个 showDetails 函数用于处理按钮点击事件
@@ -522,6 +525,7 @@
 
                     // 将 imgNameElement 和 detailsButton 添加到 detailsElement
                     detailsElement.appendChild(imgNameElement);
+                    detailsElement.appendChild(editButton);
                     detailsElement.appendChild(detailsButton);
 
                     // 将 detailsElement 添加到容器 div 元素
@@ -538,8 +542,107 @@
                 });
 
                 function showDetails(img) {
-                    // 在这里处理点击查看详情按钮后的逻辑，例如显示图片详情的模态框等
-                    console.log(img);
+                    // 使用 SweetAlert2 创建一个模态框
+                    Swal.fire({
+                        title: img.imgName, // 使用图片名作为标题
+                        html: `
+            <img src="${img.url}" alt="${img.imgName}" style="max-width: 100%;">
+            <p><strong>描述：</strong> ${img.description}</p>
+            <p><strong>创建时间：</strong> ${img.createTime}</p>
+            <p><strong>图片链接：</strong> ${img.url}</p>
+        `,
+                        showCloseButton: true,
+                        showConfirmButton: false,
+                        customClass: {
+                            container: 'sweetalert-container', // 自定义类，用于调整样式
+                        },
+                    });
+                }
+
+                function editImg(img) {
+                    // 使用 SweetAlert2 创建一个模态框
+                    Swal.fire({
+                        title: '编辑图片',
+                        html: `
+            <div class="edit-img-container">
+                <div class="form-group">
+                    <label for="newImgName">修改名称:</label>
+                    <input type="text" id="newImgName" class="swal2-input" value="${img.imgName}">
+                </div>
+                <div class="form-group">
+                    <label for="newDescription">修改描述:</label>
+                    <input type="text" id="newDescription" class="swal2-input" value="${img.description}">
+                </div>
+                <div class="form-group">
+                    <label for="newGroup">移动到:</label>
+                    <select id="newGroup" class="swal2-select" style="width: 50%;">
+                        <!-- Options for selecting a new group -->
+                    </select>
+                </div>
+            </div>
+        `,
+                        showCloseButton: true,
+                        showConfirmButton: true,
+                        confirmButtonText: '保存',
+                        cancelButtonText: '取消',
+                        customClass: {
+                            container: 'sweetalert-container',
+                        },
+                        didOpen: () => {
+                            // Populate the dropdown with available groups
+                            const dropdown = document.getElementById('newGroup');
+                            dropdown.innerHTML = ''; // Clear existing options
+
+                            // Fetch groups from the server
+                            fetch('http://localhost:10010/file/imgGroup/info')
+                                .then(response => response.json())
+                                .then(groups => {
+                                    groups.data.forEach(group => {
+                                        const option = document.createElement('option');
+                                        option.value = group;
+                                        option.textContent = group;
+                                        dropdown.appendChild(option);
+                                    });
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching groups:', error);
+                                });
+                        },
+                        preConfirm: () => {
+                            return new Promise((resolve, reject) => {
+                                // 获取用户输入的新名称、新描述和新分组
+                                const newName = document.getElementById('newImgName').value;
+                                const newDescription = document.getElementById('newDescription').value;
+                                const newGroupName = document.getElementById('newGroup').value;
+
+                                // 构建要发送的 JSON 数据
+                                const requestData = {
+                                    newName: newName,
+                                    newDescription: newDescription,
+                                    newGroupName: newGroupName,
+                                    imgId: img.imgId
+                                };
+
+                                // 构建 Fetch 请求
+                                fetch('http://localhost:10010/file/img/modify', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(requestData)
+                                }).then(response => {
+                                    // 更新当前页面
+                                    updateImageGrid();
+                                    resolve(); // 确保在异步操作完成后关闭模态框
+                                })
+                                    .catch(error => {
+                                        // 处理错误
+                                        console.error('Error:', error);
+                                        reject('修改失败');
+                                    });
+                            });
+                        },
+                    });
                 }
             })
             .catch(error => {
