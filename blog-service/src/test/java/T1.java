@@ -34,7 +34,6 @@ public class T1 {
 
     @Test
     public void t2() { //where blog_id
-        List<Blog> blogs = blogMapper.queryRandBlog("select * from blog order by rand() limit 3", 3);
-        System.out.println("");
+
     }
 }

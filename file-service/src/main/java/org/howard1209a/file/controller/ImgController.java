@@ -35,10 +35,10 @@ public class ImgController {
         return imgService.imgPaginationForGroup(imgPaginationDto, cookie.getValue());
     }
 
-    @GetMapping("/download/{imgFileName}")
-    public void downImg(@PathVariable("imgFileName") String imgFileName, HttpServletRequest request, HttpServletResponse response) {
+    @GetMapping("/download/{imgId}")
+    public void downImg(@PathVariable("imgId") String imgId, HttpServletRequest request, HttpServletResponse response) {
         Cookie cookie = Utils.getCookie("session", request);
-        imgService.download(response, imgFileName, cookie.getValue());
+        imgService.download(response, imgId, cookie.getValue());
     }
 
     @PostMapping("/modify")

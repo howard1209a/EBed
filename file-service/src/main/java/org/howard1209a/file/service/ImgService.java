@@ -54,9 +54,10 @@ public class ImgService {
         return new Response<>(true, res);
     }
 
-    public void download(HttpServletResponse response, String imgFileName, String session) {
+    public void download(HttpServletResponse response, String imgId, String session) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
-        String path = USER_IMG_STORAGE_DIR + userState.getUserId() + "/" + imgFileName;
+        Img img = imgMapper.queryInfoById(Long.parseLong(imgId.split("\\.")[0]));
+        String path = USER_IMG_STORAGE_DIR + img.getUserId() + "/" + imgId;
         File file = new File(path);
         try (FileInputStream is = new FileInputStream(file);
              OutputStream os = response.getOutputStream()) {
