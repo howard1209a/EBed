@@ -75,4 +75,8 @@ public class ImgService {
         ImgGroup imgGroup = imgGroupMapper.checkGroupNameForOneUser(new ImgGroup(null, imgModifyDto.getNewGroupName(), userState.getUserId()));
         imgMapper.updateImg(imgModifyDto, imgGroup.getImgGroupId());
     }
+
+    public Img queryInfoById(Long imgId) {
+        return imgMapper.queryInfoById(imgId);
+    }
 }

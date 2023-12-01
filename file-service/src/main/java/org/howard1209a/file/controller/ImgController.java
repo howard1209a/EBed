@@ -42,8 +42,14 @@ public class ImgController {
     }
 
     @PostMapping("/modify")
-    void modifyImg(@RequestBody ImgModifyDto imgModifyDto,HttpServletRequest request) {
+    public void modifyImg(@RequestBody ImgModifyDto imgModifyDto, HttpServletRequest request) {
         Cookie cookie = Utils.getCookie("session", request);
-        imgService.modifyImg(imgModifyDto,cookie.getValue());
+        imgService.modifyImg(imgModifyDto, cookie.getValue());
+    }
+
+    @GetMapping("/info")
+    public Img queryInfoById(@RequestParam("imgId") Long imgId) {
+        Img img = imgService.queryInfoById(imgId);
+        return img;
     }
 }

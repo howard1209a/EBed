@@ -13,6 +13,7 @@
         <module>file-service</module>
         <module>gateway</module>
         <module>staticweb</module>
+        <module>blog-service</module>
     </modules>
 
     <parent>

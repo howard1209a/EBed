@@ -233,6 +233,27 @@
             background-color: #0056b3; /* 按钮在悬停时的背景颜色 */
         }
 
+        /* 新添加的样式 */
+        #publishBlogButton {
+            cursor: pointer;
+            background-color: #28a745; /* 按钮背景颜色 */
+            color: #fff; /* 按钮文字颜色 */
+            border: none;
+            padding: 10px 20px; /* 按钮内边距 */
+            border-radius: 5px; /* 圆角边框 */
+            transition: background-color 0.3s ease; /* 颜色变化过渡效果 */
+            margin-top: 15px; /* 与其他按钮之间的上边距 */
+        }
+
+        #publishBlogButton:hover {
+            background-color: #218838; /* 按钮在悬停时的背景颜色 */
+        }
+
+        #blogContent {
+            width: 80%;
+            height: 300px;
+        }
+
     </style>
 </head>
 <body>
@@ -335,7 +356,7 @@
         });
 
         // 重定向到登录页面
-        window.location.href = "http://localhost:10010/static/login.html"; // 请替换为你的登录页面地址
+        window.location.href = "login.html"; // 请替换为你的登录页面地址
     }
 
     function navigateToGroup() {
@@ -556,8 +577,93 @@
                         customClass: {
                             container: 'sweetalert-container', // 自定义类，用于调整样式
                         },
+                        footer: `
+            <button id="publishBlogButton" class="details-button">发布博客</button>
+        `,
+                        didOpen: () => {
+                            // 如果需要，可以在此处添加事件监听器或其他逻辑
+                            const publishBlogButton = document.getElementById('publishBlogButton');
+                            publishBlogButton.addEventListener('click', () => publishBlog(img));
+                        }
                     });
                 }
+
+                function publishBlog(img) {
+                    const url = `http://localhost:10010/blog/label/all`;
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(msg => {
+                            // 关闭当前模态框
+                            Swal.close();
+
+                            // 获取所有标签
+                            const allTags = msg.data;
+
+                            // 使用 SweetAlert2 创建一个新的模态框，让用户输入博客信息和选择标签
+                            Swal.fire({
+                                title: '发布博客',
+                                html: `
+            <div class="form-group">
+                <label for="blogTitle">博客标题:</label>
+                <input type="text" id="blogTitle" class="swal2-input" placeholder="请输入博客标题">
+            </div>
+            <div class="form-group">
+                <label for="blogContent">博客内容:</label>
+                <textarea id="blogContent" class="swal2-input" placeholder="请输入博客内容"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="blogTags">选择标签:</label>
+                <select id="blogTags" class="swal2-select" multiple>
+                    <!-- 为每个标签创建一个选项 -->
+                    ${allTags.map(tag => `<option value="${tag}">${tag}</option>`).join('')}
+                </select>
+            </div>
+        `,
+                                showCloseButton: true,
+                                showConfirmButton: true,
+                                confirmButtonText: '发布',
+                                cancelButtonText: '取消',
+                                customClass: {
+                                    container: 'sweetalert-container',
+                                },
+                                preConfirm: () => {
+                                    return new Promise((resolve) => {
+                                        // 获取用户输入的博客标题、内容和选择的标签
+                                        const blogTitle = document.getElementById('blogTitle').value;
+                                        const blogContent = document.getElementById('blogContent').value;
+                                        const selectedTags = Array.from(document.getElementById('blogTags').selectedOptions).map(option => option.value);
+
+                                        let requestData = {
+                                            title: blogTitle,
+                                            imgId: img.imgId,
+                                            content: blogContent,
+                                            labels: selectedTags
+                                        }
+
+                                        // 构建 Fetch 请求
+                                        fetch('http://localhost:10010/blog/publish', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            },
+                                            body: JSON.stringify(requestData)
+                                        }).then(response => {
+                                            resolve(); // 确保在异步操作完成后关闭模态框
+                                        })
+                                            .catch(error => {
+                                                // 处理错误
+                                                console.error('Error:', error);
+                                                reject('修改失败');
+                                            });
+                                    });
+                                },
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error creating new group:', error);
+                        });
+                }
+
 
                 function editImg(img) {
                     // 使用 SweetAlert2 创建一个模态框

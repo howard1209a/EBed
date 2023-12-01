@@ -3,38 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>随机用户名和邮箱</title>
+    <title>Markdown Renderer</title>
 </head>
 <body>
+
+<div id="app">
+    <textarea v-model="markdownText" @input="updateMarkdown"></textarea>
+    <div v-html="renderedMarkdown"></div>
+</div>
+
+<!-- 引入本地安装的 Vue.js -->
+<script src="http://localhost:10010/static/js/vue.min.js"></script>
+<!-- 引入本地安装的 marked 库 -->
+<script src="http://localhost:10010/static/js/marked.min.js"></script>
+
 <script>
-    const firstNames = ["张", "李", "王", "赵", "陈", "刘", "周", "吴", "孙", "马"];
-    const lastNames = ["伟", "芳", "娜", "秀英", "强", "磊", "军", "梅", "艳", "霞"];
-
-    function generateRandomUsername() {
-        const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-        const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-        return randomFirstName + randomLastName;
-    }
-
-    function generateRandomEmail(username) {
-        const emailProviders = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "example.com"];
-        const randomProvider = emailProviders[Math.floor(Math.random() * emailProviders.length)];
-        return username.toLowerCase() + "@" + randomProvider;
-    }
-
-    function generateRandomUserdata(count) {
-        const users = [];
-        for (let i = 0; i < count; i++) {
-            const username = generateRandomUsername();
-            const email = generateRandomEmail(username);
-            users.push({ username, email });
-        }
-        return users;
-    }
-
-    // 生成并输出10个随机用户名和邮箱
-    const randomUsers = generateRandomUserdata(10);
-    console.log(randomUsers);
+    // 这里是你的 Vue 实例代码
+    new Vue({
+        el: '#app',
+        data: {
+            markdownText: '# Hello, Markdown!',
+            renderedMarkdown: '',
+        },
+        methods: {
+            updateMarkdown() {
+                this.renderedMarkdown = marked(this.markdownText);
+            },
+        },
+        mounted() {
+            this.updateMarkdown();
+        },
+    });
 </script>
+
 </body>
 </html>

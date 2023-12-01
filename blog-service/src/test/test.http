@@ -1,0 +1,11 @@
+GET http://localhost:10010/blog/browse/load?loadNum=3
+Accept: application/json
+Cookie: Idea-aef4b63f=7487860a-76a2-48ee-b8cc-123a8d20f97c; session=1179726837329309696
+
+###
+
+GET http://localhost:10010/blog/browse/refresh
+Accept: application/json
+Cookie: Idea-aef4b63f=7487860a-76a2-48ee-b8cc-123a8d20f97c; session=1179726837329309696
+
+###

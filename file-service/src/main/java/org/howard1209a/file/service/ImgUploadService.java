@@ -67,11 +67,11 @@ public class ImgUploadService {
         }
 
         // 把本次上传的所有图片的id缓存到session
-        redisLockUtil.blockingGetLock(session);
+        redisLockUtil.blockingGetLock(USER_STATE_KEY + session);
         userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         userState.setLastUploadedImgId(lastUploadedImgId);
         redisUtil.setObject(USER_STATE_KEY + session, userState);
-        redisLockUtil.unlock(session);
+        redisLockUtil.unlock(USER_STATE_KEY + session);
     }
 
     public void imgDescriptionAllUpload(List<String> descriptions, String session) {
@@ -83,10 +83,10 @@ public class ImgUploadService {
         }
 
         // 清空缓存的descriptions
-        redisLockUtil.blockingGetLock(session);
+        redisLockUtil.blockingGetLock(USER_STATE_KEY + session);
         userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         userState.setLastUploadedImgId(null);
         redisUtil.setObject(USER_STATE_KEY + session, userState);
-        redisLockUtil.unlock(session);
+        redisLockUtil.unlock(USER_STATE_KEY + session);
     }
 }

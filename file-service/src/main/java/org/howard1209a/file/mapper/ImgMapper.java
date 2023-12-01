@@ -24,4 +24,7 @@ public interface ImgMapper {
 
     @Update("update img set img_name = #{imgModifyDto.newName}, img_group_id = #{imgGroupId}, description = #{imgModifyDto.newDescription} where img_id = #{imgModifyDto.imgId}")
     void updateImg(@Param("imgModifyDto") ImgModifyDto imgModifyDto, @Param("imgGroupId") Long imgGroupId);
+
+    @Select("select * from img where img_id = #{imgId}")
+    Img queryInfoById(@Param("imgId") Long imgId);
 }
