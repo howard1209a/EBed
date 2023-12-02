@@ -1,6 +1,7 @@
 package org.howard1209a.blog.controller;
 
 import org.howard1209a.blog.mapper.LabelMapper;
+import org.howard1209a.blog.pojo.Comment;
 import org.howard1209a.blog.pojo.dto.BlogDto;
 import org.howard1209a.blog.pojo.dto.BlogLoadDto;
 import org.howard1209a.blog.pojo.dto.Response;

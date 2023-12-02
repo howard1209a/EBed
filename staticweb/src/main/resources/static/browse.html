@@ -141,6 +141,47 @@
             max-width: 1000px; /* 调整模态框宽度 */
         }
 
+        /* 在你的样式表中添加以下样式 */
+        .custom-swal-popup {
+            /* 添加你想要的弹出框整体样式 */
+        }
+
+        .custom-swal-content {
+            /* 添加你想要的内容区域样式 */
+        }
+
+        .custom-swal-confirm-button {
+            background-color: #4CAF50; /* 设置按钮背景颜色 */
+            color: white; /* 设置文字颜色 */
+            border: 1px solid #4CAF50; /* 设置边框颜色 */
+            border-radius: 5px; /* 设置边框圆角 */
+            padding: 10px 20px; /* 设置内边距 */
+            margin-right: 10px; /* 设置右边距 */
+        }
+
+        .custom-swal-cancel-button {
+            background-color: #ccc; /* 设置取消按钮背景颜色 */
+            color: white; /* 设置文字颜色 */
+            border: 1px solid #ccc; /* 设置边框颜色 */
+            border-radius: 5px; /* 设置边框圆角 */
+            padding: 10px 20px; /* 设置内边距 */
+        }
+
+        /* 如果需要自定义评论按钮样式，可以添加以下样式 */
+        #commentButton {
+            background-color: #3498db; /* 设置按钮背景颜色 */
+            color: white; /* 设置文字颜色 */
+            border: 1px solid #3498db; /* 设置边框颜色 */
+            border-radius: 5px; /* 设置边框圆角 */
+            padding: 10px 20px; /* 设置内边距 */
+            margin-right: 10px; /* 设置右边距 */
+        }
+
+        #commentButton:hover {
+            background-color: #2980b9; /* 设置鼠标悬停时的背景颜色 */
+            border: 1px solid #2980b9; /* 设置鼠标悬停时的边框颜色 */
+        }
+
     </style>
 </head>
 <body>
@@ -191,8 +232,6 @@
                 additionalContent.classList.add("horizontal-images");
 
                 array.forEach(blogLoadDto => {
-                    let a = {name: 1, sex: 2};
-
                     const imageContainer = document.createElement("div");
                     imageContainer.classList.add("image-container");
 
@@ -243,25 +282,119 @@
         console.log(`点赞图片: ${imageUrl}`);
     }
 
-    function readBlog(blogLoadDto) {
-        console.log(blogLoadDto);
-        // 弹出SweetAlert模态框
-        Swal.fire({
-            title: blogLoadDto.blog.title,
-            html: `
-            <img src="${blogLoadDto.url}" alt="图片" style="width: 50%; height: auto;">
-            <p><strong>标题:</strong> ${blogLoadDto.blog.title}</p>
-            <p><strong>作者:</strong> ${blogLoadDto.userName}</p>
-            <p><strong>正文:</strong> ${blogLoadDto.blog.content}</p>
-            <p><strong>发布时间:</strong> ${blogLoadDto.blog.createTime}</p>
-        `,
-            confirmButtonText: '关闭',
-            customClass: {
-                popup: 'custom-swal-popup',
-                content: 'custom-swal-content',
-            },
-            width: '70%', // 调整模态框宽度
-        });
+    async function readBlog(blogLoadDto) {
+        try {
+            // 发送GET请求获取多条评论
+            const commentsResponse = await fetch('http://localhost:10010/blog/comment/all?blogId=' + blogLoadDto.blog.blogId);
+            const msg = await commentsResponse.json();
+            const commentsData = msg.data;
+
+            // 创建一个文本框元素
+            const commentInput = document.createElement('input');
+            commentInput.setAttribute('type', 'text');
+            commentInput.setAttribute('placeholder', '输入评论...');
+            commentInput.setAttribute('id', 'commentInput');
+
+            // 创建一个发表评论按钮
+            const commentButton = document.createElement('button');
+            commentButton.setAttribute('id', 'commentButton');
+            commentButton.setAttribute('class', 'btn btn-primary');
+            commentButton.textContent = '发表评论';
+
+            // 生成评论内容
+            const commentsHtml = commentsData.map(comment => `<p>${comment.commentContent}</p>`).join('');
+
+            // 弹出SweetAlert模态框
+            const swalInstance = await Swal.fire({
+                title: blogLoadDto.blog.title,
+                html: `
+                <img src="${blogLoadDto.url}" alt="图片" style="width: 50%; height: auto;">
+                <p><strong>标题:</strong> ${blogLoadDto.blog.title}</p>
+                <p><strong>作者:</strong> ${blogLoadDto.userName}</p>
+                <p><strong>正文:</strong> ${blogLoadDto.blog.content}</p>
+                <p><strong>发布时间:</strong> ${blogLoadDto.blog.createTime}</p>
+                <div class="comments-section">
+                    ${commentsHtml}
+                </div>
+            `,
+                confirmButtonText: '关闭',
+                customClass: {
+                    popup: 'custom-swal-popup',
+                    content: 'custom-swal-content',
+                    confirmButton: 'custom-swal-confirm-button',
+                    cancelButton: 'custom-swal-cancel-button',
+                },
+                width: '70%',
+                footer: `
+                <div class="comment-section">
+                    ${commentInput.outerHTML}
+                    ${commentButton.outerHTML}
+                </div>
+            `,
+                didRender: () => {
+                    // 在模态框渲染后获取评论按钮并添加点击事件
+                    const commentButton = document.getElementById('commentButton');
+                    if (commentButton) {
+                        commentButton.addEventListener('click', async function () {
+                            const commentText = document.getElementById('commentInput').value;
+                            const requestData = {
+                                commentContent: commentText,
+                                blogId: blogLoadDto.blog.blogId
+                            };
+
+                            // 发送POST请求发布评论
+                            const response = await fetch('http://localhost:10010/blog/comment/publish', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(requestData)
+                            });
+
+                            if (response.ok) {
+                                // 更新评论内容
+                                const commentsResponse = await fetch('http://localhost:10010/blog/comment/all?blogId=' + blogLoadDto.blog.blogId);
+                                const msg = await commentsResponse.json();
+                                const updatedCommentsData = msg.data;
+                                const updatedCommentsHtml = updatedCommentsData.map(comment => `<p>${comment.commentContent}</p>`).join('');
+
+                                // 生成评论内容
+                                const commentsHtml = commentsData.map(comment => `
+                                    <div class="comment">
+                                        <p><strong>用户名称:</strong> ${comment.userName}</p>
+                                        <p><strong>评论内容:</strong> ${comment.commentContent}</p>
+                                        <p><strong>父评论内容:</strong> ${comment.fatherCommentContent ? comment.fatherCommentContent : '无'}</p>
+                                        <p><strong>点赞数:</strong> ${comment.likes}</p>
+                                        <p><strong>点踩数:</strong> ${comment.dislikes}</p>
+                                        <p><strong>楼层数:</strong> ${comment.floor}</p>
+                                    </div>
+                                `).join('');
+
+                                // 更新评论区域的内容
+                                const commentsSection = document.querySelector('.comments-section');
+                                if (commentsSection) {
+                                    commentsSection.innerHTML = commentsHtml;
+                                }
+
+                                // 清空评论输入框
+                                document.getElementById('commentInput').value = '';
+
+                                console.log('评论发布成功');
+                            } else {
+                                // 处理错误
+                                console.error('Error:', response);
+                                console.error('评论发布失败');
+                            }
+                        });
+                    }
+                }
+            });
+
+            // 你也可以通过 swalInstance 中的didRender函数获取当前模态框的DOM元素
+            // const modalElement = swalInstance.container;
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 
 

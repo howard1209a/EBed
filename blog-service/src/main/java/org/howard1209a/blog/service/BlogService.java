@@ -3,11 +3,13 @@ package org.howard1209a.blog.service;
 import org.howard1209a.blog.feign.FileClient;
 import org.howard1209a.blog.feign.UserClient;
 import org.howard1209a.blog.mapper.BlogMapper;
+import org.howard1209a.blog.mapper.CommentMapper;
 import org.howard1209a.blog.pojo.*;
 import org.howard1209a.blog.pojo.dto.BlogDto;
 import org.howard1209a.blog.pojo.dto.BlogLoadDto;
 import org.howard1209a.blog.util.RedisLockUtil;
 import org.howard1209a.blog.util.RedisUtil;
+import org.howard1209a.blog.util.SnowflakeIdUtils;
 import org.howard1209a.blog.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class BlogService {
     private RedisUtil redisUtil;
     @Autowired
     private BlogMapper blogMapper;
+    @Autowired
+    private CommentMapper commentMapper;
     @Autowired
     private UserClient userClient;
     @Autowired

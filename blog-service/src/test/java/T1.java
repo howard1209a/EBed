@@ -1,9 +1,11 @@
 import lombok.extern.slf4j.Slf4j;
 import org.howard1209a.blog.BlogApplication;
 import org.howard1209a.blog.mapper.BlogMapper;
+import org.howard1209a.blog.mapper.CommentMapper;
 import org.howard1209a.blog.mapper.LabelMapper;
 import org.howard1209a.blog.pojo.Blog;
 import org.howard1209a.blog.pojo.Label;
+import org.howard1209a.blog.pojo.dto.CommentDto;
 import org.howard1209a.blog.util.SnowflakeIdUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +24,8 @@ public class T1 {
     @Autowired
     private BlogMapper blogMapper;
     @Autowired
+    private CommentMapper commentMapper;
+    @Autowired
     private SnowflakeIdUtils snowflakeIdUtils;
 
     @Test
@@ -33,7 +37,8 @@ public class T1 {
     }
 
     @Test
-    public void t2() { //where blog_id
-
+    public void t2() {
+        List<CommentDto> commentDtos = commentMapper.queryAllCommentForOneBlogWithFather(1180168760363986944l);
+        System.out.println("");
     }
 }
