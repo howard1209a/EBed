@@ -1,6 +1,7 @@
 package org.howard1209a.blog.controller;
 
 import org.howard1209a.blog.pojo.Comment;
+import org.howard1209a.blog.pojo.dto.CommentDto;
 import org.howard1209a.blog.pojo.dto.Response;
 import org.howard1209a.blog.service.CommentService;
 import org.howard1209a.blog.util.Utils;
@@ -24,7 +25,7 @@ public class CommentController {
     }
 
     @GetMapping("/all")
-    public Response<List<Comment>> queryAllCommentForOneBlog(@RequestParam Long blogId) {
+    public Response<List<CommentDto>> queryAllCommentForOneBlog(@RequestParam Long blogId) {
         return commentService.queryAllCommentForOneBlog(blogId);
     }
 }

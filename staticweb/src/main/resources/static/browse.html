@@ -182,6 +182,45 @@
             border: 1px solid #2980b9; /* 设置鼠标悬停时的边框颜色 */
         }
 
+        .comment-details {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .comment {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .parent-comment {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 5px;
+        }
+
+        .child-comments {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .comment-details {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .comment-details p {
+            margin: 0;
+        }
+
+        .comment-details strong {
+            margin-right: 5px;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -301,8 +340,8 @@
             commentButton.setAttribute('class', 'btn btn-primary');
             commentButton.textContent = '发表评论';
 
-            // 生成评论内容
-            const commentsHtml = commentsData.map(comment => `<p>${comment.commentContent}</p>`).join('');
+            // 获取最新评论
+            const commentsHtml = await fetchComments(blogLoadDto.blog.blogId);
 
             // 弹出SweetAlert模态框
             const swalInstance = await Swal.fire({
@@ -352,23 +391,8 @@
                             });
 
                             if (response.ok) {
-                                // 更新评论内容
-                                const commentsResponse = await fetch('http://localhost:10010/blog/comment/all?blogId=' + blogLoadDto.blog.blogId);
-                                const msg = await commentsResponse.json();
-                                const updatedCommentsData = msg.data;
-                                const updatedCommentsHtml = updatedCommentsData.map(comment => `<p>${comment.commentContent}</p>`).join('');
-
-                                // 生成评论内容
-                                const commentsHtml = commentsData.map(comment => `
-                                    <div class="comment">
-                                        <p><strong>用户名称:</strong> ${comment.userName}</p>
-                                        <p><strong>评论内容:</strong> ${comment.commentContent}</p>
-                                        <p><strong>父评论内容:</strong> ${comment.fatherCommentContent ? comment.fatherCommentContent : '无'}</p>
-                                        <p><strong>点赞数:</strong> ${comment.likes}</p>
-                                        <p><strong>点踩数:</strong> ${comment.dislikes}</p>
-                                        <p><strong>楼层数:</strong> ${comment.floor}</p>
-                                    </div>
-                                `).join('');
+                                // 获取最新评论
+                                const commentsHtml = await fetchComments(blogLoadDto.blog.blogId);
 
                                 // 更新评论区域的内容
                                 const commentsSection = document.querySelector('.comments-section');
@@ -397,6 +421,77 @@
         }
     }
 
+    async function fetchComments(blogId) {
+        const commentsResponse = await fetch('http://localhost:10010/blog/comment/all?blogId=' + blogId);
+        const msg = await commentsResponse.json();
+        const commentsData = msg.data;
+
+        const commentsHtml = commentsData.map(comment => {
+            const commentId = comment.commentId;
+            return `
+        <div class="comment">
+            ${comment.fatherUserName !== null ? `<div class="parent-comment">
+                                                    <p><strong>回复此评论:</strong> ${comment.fatherUserName} 说 ${comment.fatherCommentContent}</p>
+                                                </div>` : ''}
+            <div class="child-comments">
+                <div class="comment-details">
+                    <p>${comment.userName} 说 ${comment.commentContent}</p>
+                    <p><strong>点赞</strong> ${comment.likesNum}</p>
+                    <p><strong>点踩</strong> ${comment.dislikesNum}</p>
+                    <p><strong>发表时间:</strong> ${comment.createTime}</p>
+                    <p><strong>楼</strong> ${comment.floor}</p>
+                </div>
+                <button class="reply-button btn btn-primary" onclick="showReplyBox(this)">回复</button>
+                <div class="reply-box" style="display: none;">
+                    <textarea class="reply-textarea" placeholder="输入回复内容"></textarea>
+                    <button class="submit-reply btn btn-primary" p1 = blogId onclick="submitReply(this,'${blogId}','${commentId}')">提交回复</button>
+                </div>
+            </div>
+        </div>`;
+        }).join('');
+
+        return commentsHtml;
+    }
+
+    // 显示回复框的函数
+    function showReplyBox(button) {
+        const replyBox = button.nextElementSibling;
+        replyBox.style.display = 'block';
+    }
+
+    // 提交回复的函数
+    async function submitReply(button, blogId, commentId) {
+        const replyBox = button.parentElement;
+        const replyContent = replyBox.querySelector('.reply-textarea').value;
+
+        const requestData = {
+            commentContent: replyContent,
+            blogId: blogId,
+            fatherCommentId: commentId
+        };
+
+        // 发送POST请求发布评论
+        await fetch('http://localhost:10010/blog/comment/publish', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        // 清空回复框并隐藏
+        replyBox.querySelector('.reply-textarea').value = '';
+        replyBox.style.display = 'none';
+
+        // 获取最新评论
+        const commentsHtml = await fetchComments(blogId);
+
+        // 更新评论区域的内容
+        const commentsSection = document.querySelector('.comments-section');
+        if (commentsSection) {
+            commentsSection.innerHTML = commentsHtml;
+        }
+    }
 
     function fetchImageUrlArray() {
         const url = `http://localhost:10010/blog/browse/load?loadNum=3`; // 请替换为实际的URL

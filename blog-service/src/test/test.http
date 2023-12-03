@@ -10,7 +10,7 @@ Cookie: Idea-aef4b63f=7487860a-76a2-48ee-b8cc-123a8d20f97c; session=117972683732
 
 ###
 
-GET http://localhost:10010/blog/comment/all?blogId=1180152336044142592
+GET http://localhost:10010/blog/comment/all?blogId=1180168760363986944
 Accept: application/json
 Cookie: Idea-aef4b63f=7487860a-76a2-48ee-b8cc-123a8d20f97c; session=1179726837329309696
 

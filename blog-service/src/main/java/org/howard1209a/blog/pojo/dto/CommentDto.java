@@ -17,6 +17,8 @@ public class CommentDto {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long userId;
     private String userName;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long commentId;
     private String commentContent;
     private Integer likesNum;
     private Integer dislikesNum;
@@ -27,4 +29,14 @@ public class CommentDto {
     private Long fatherUserId;
     private String fatherUserName;
     private String fatherCommentContent;
+
+    public CommentDto(Comment comment) {
+        commentId = comment.getCommentId();
+        userId = comment.getUserId();
+        commentContent = comment.getCommentContent();
+        likesNum = comment.getLikesNum();
+        dislikesNum = comment.getDislikesNum();
+        createTime = comment.getCreateTime();
+        floor = comment.getFloor();
+    }
 }
