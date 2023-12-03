@@ -4,6 +4,7 @@ import org.howard1209a.blog.feign.FileClient;
 import org.howard1209a.blog.feign.UserClient;
 import org.howard1209a.blog.mapper.BlogMapper;
 import org.howard1209a.blog.mapper.CommentMapper;
+import org.howard1209a.blog.mapper.LabelMapper;
 import org.howard1209a.blog.pojo.*;
 import org.howard1209a.blog.pojo.dto.BlogDto;
 import org.howard1209a.blog.pojo.dto.BlogLoadDto;
@@ -24,6 +25,8 @@ import static org.howard1209a.blog.constant.BlogConstant.USER_STATE_KEY;
 public class BlogService {
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private LabelMapper labelMapper;
     @Autowired
     private BlogMapper blogMapper;
     @Autowired
@@ -68,7 +71,8 @@ public class BlogService {
             User user = userClient.queryInfoById(blog.getUserId());
             Img img = fileClient.queryInfoById(blog.getImgId());
             String url = "http://localhost:10010/file/img/download/" + img.getImgId() + "." + img.getImgType();
-            res.add(new BlogLoadDto(blog, user.getUserName(), url));
+            List<String> labels = labelMapper.queryLabelsForOneBlog(blog.getBlogId());
+            res.add(new BlogLoadDto(blog, user.getUserName(), url, labels));
         }
 
         redisLockUtil.blockingGetLock(BROWSED_BLOG_KEY + session);

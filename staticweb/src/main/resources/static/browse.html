@@ -232,6 +232,21 @@
             font-weight: bold; /* 可以添加其他样式以强调高亮状态 */
         }
 
+        /* 添加新的样式定义，用于博客类别标签 */
+        .category-tags {
+            display: flex;
+            margin-top: 5px;
+        }
+
+        .category-tags span {
+            background-color: #3498db;
+            color: #fff;
+            padding: 3px 8px;
+            margin-right: 5px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
     </style>
 </head>
 <body>
@@ -245,6 +260,9 @@
         </div>
         <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/browse.html')">
             <i class="fas fa-globe"></i> 浏览广场
+        </div>
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/search.html')">
+            <i class="fas fa-search"></i> 全局搜索
         </div>
         <div class="menu-item" onclick="navigateTo('profile.html')">
             <i class="fas fa-user"></i> 个人中心
@@ -309,10 +327,20 @@
                     readBlogButton.classList.add("read-blog-button");
                     readBlogButton.onclick = () => readBlog(blogLoadDto);
 
+                    const categoryTagsDiv = document.createElement("div");
+                    categoryTagsDiv.classList.add("category-tags");
+
+                    blogLoadDto.labels.forEach(category => {
+                        const categoryTag = document.createElement("span");
+                        categoryTag.textContent = category;
+                        categoryTagsDiv.appendChild(categoryTag);
+                    });
+
                     imageInfoDiv.appendChild(titleParagraph);
                     imageInfoDiv.appendChild(authorParagraph);
                     imageInfoDiv.appendChild(likeButton);
                     imageInfoDiv.appendChild(readBlogButton);
+                    imageInfoDiv.appendChild(categoryTagsDiv);
 
                     imageContainer.appendChild(img);
                     imageContainer.appendChild(imageInfoDiv);
@@ -358,15 +386,16 @@
             const swalInstance = await Swal.fire({
                 title: blogLoadDto.blog.title,
                 html: `
-                <img src="${blogLoadDto.url}" alt="图片" style="width: 50%; height: auto;">
-                <p><strong>标题:</strong> ${blogLoadDto.blog.title}</p>
-                <p><strong>作者:</strong> ${blogLoadDto.userName}</p>
-                <p><strong>正文:</strong> ${blogLoadDto.blog.content}</p>
-                <p><strong>发布时间:</strong> ${blogLoadDto.blog.createTime}</p>
-                <div class="comments-section">
-                    ${commentsHtml}
-                </div>
-            `,
+                    <img src="${blogLoadDto.url}" alt="图片" style="width: 50%; height: auto;">
+                    <p><strong>标题:</strong> ${blogLoadDto.blog.title}</p>
+                    <p><strong>作者:</strong> ${blogLoadDto.userName}</p>
+                    <p><strong>正文:</strong> ${blogLoadDto.blog.content}</p>
+                    <p><strong>发布时间:</strong> ${blogLoadDto.blog.createTime}</p>
+                    <p><strong>类别:</strong> ${blogLoadDto.labels.join(', ')}</p>
+                    <div class="comments-section">
+                        ${commentsHtml}
+                    </div>
+                `,
                 confirmButtonText: '关闭',
                 customClass: {
                     popup: 'custom-swal-popup',

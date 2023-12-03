@@ -15,4 +15,7 @@ public interface BlogMapper {
 
     @Select("select * from blog order by rand() limit #{loadNum}")
     public List<Blog> queryRandBlog(Integer loadNum);
+
+    @Select("select * from blog")
+    public List<Blog> queryAllBlog();
 }

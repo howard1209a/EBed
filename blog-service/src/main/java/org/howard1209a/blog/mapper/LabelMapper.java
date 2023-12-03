@@ -15,4 +15,7 @@ public interface LabelMapper {
 
     @Select("select label_id from label where label_name = #{labelName}")
     public Long queryIdByName(String labelName);
+
+    @Select("select label.label_name from relation_blog_label,label where #{blogId} = relation_blog_label.blog_id and relation_blog_label.label_id = label.label_id")
+    public List<String> queryLabelsForOneBlog(Long blogId);
 }

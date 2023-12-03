@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.howard1209a.blog.pojo.Blog;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,4 +15,5 @@ public class BlogLoadDto {
     private Blog blog;
     private String userName;
     private String url;
+    private List<String> labels;
 }

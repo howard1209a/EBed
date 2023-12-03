@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图床网站</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-color: #f2f2f2;
+        }
+
+        #container {
+            display: flex;
+            flex: 1;
+        }
+
+        #sidebar {
+            background-color: #333;
+            color: #fff;
+            width: 200px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .menu-item {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .menu-item:hover {
+            background-color: #555;
+        }
+
+        .menu-item i {
+            margin-right: 10px;
+        }
+
+        #content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .user-info {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 200px; /* 与侧边栏宽度保持一致 */
+            background-color: #888888; /* 栏目背景颜色 */
+            padding: 20px; /* 内边距 */
+            text-align: center;
+            font-size: 14px;
+            color: #ffffff; /* 字体颜色 */
+        }
+
+        .logout-btn {
+            cursor: pointer;
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: #fff; /* 按钮文字颜色 */
+            border: none;
+            padding: 5px 10px; /* 按钮内边距 */
+            margin-top: 10px;
+            border-radius: 5px; /* 圆角边框 */
+            display: inline-block;
+            transition: background-color 0.3s ease; /* 颜色变化过渡效果 */
+        }
+
+        .logout-btn:hover {
+            background-color: #0056b3; /* 按钮在悬停时的背景颜色 */
+        }
+
+        #content {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+        }
+
+        #search-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #search-input {
+            padding: 10px;
+            width: 60%;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        #search-type, #filter, #sort {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        label {
+            margin-right: 20px;
+            font-size: 14px;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        #search-results {
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="sidebar">
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/upload.html')">
+            <i class="fas fa-cloud-upload-alt"></i> 图片上传
+        </div>
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/warehouse.html')">
+            <i class="fas fa-images"></i> 我的图库
+        </div>
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/browse.html')">
+            <i class="fas fa-globe"></i> 浏览广场
+        </div>
+        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/search.html')">
+            <i class="fas fa-search"></i> 全局搜索
+        </div>
+        <div class="menu-item" onclick="navigateTo('profile.html')">
+            <i class="fas fa-user"></i> 个人中心
+        </div>
+        <div class="user-info">
+            <!-- 在这里显示用户信息，例如用户名、头像等 -->
+            用户名
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div id="content">
+        <!-- 全局搜索 -->
+        <div id="search-container">
+            <input type="text" id="search-input" placeholder="输入关键字...">
+            <button onclick="search()">搜索</button>
+
+            <div id="search-type">
+                <label>
+                    <input type="radio" name="searchType" value="blog" checked> 博客搜索
+                </label>
+                <label>
+                    <input type="radio" name="searchType" value="user"> 用户搜索
+                </label>
+            </div>
+
+            <!-- 多选分类标签 -->
+            <div id="filter">
+                <label>
+                    <input type="checkbox" name="filter" value="all" checked> 所有分类
+                </label>
+                <label>
+                    <input type="checkbox" name="filter" value="标签1"> 标签1
+                </label>
+                <label>
+                    <input type="checkbox" name="filter" value="标签2"> 标签2
+                </label>
+                <label>
+                    <input type="checkbox" name="filter" value="标签3"> 标签3
+                </label>
+                <!-- 添加其他分类标签的复选框 -->
+            </div>
+
+            <div id="sort">
+                <label>
+                    <input type="radio" name="sort" value="likes" checked> 点赞排序
+                </label>
+                <label>
+                    <input type="radio" name="sort" value="comments"> 评论数排序
+                </label>
+                <label>
+                    <input type="radio" name="sort" value="newest"> 新发布
+                </label>
+            </div>
+        </div>
+        <!-- 搜索结果区域 -->
+        <div id="search-results">
+            <!-- 这里显示搜索结果 -->
+        </div>
+    </div>
+</div>
+
+<!-- 在头部的<script>标签中添加以下脚本 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 页面加载完成后执行的操作
+        fetchTags();
+    });
+
+    function fetchTags() {
+        // 发送 GET 请求获取标签数据
+        fetch('http://localhost:10010/blog/label/all')
+            .then(response => response.json())
+            .then(msg => {
+                // 处理获取到的标签数据
+                updateFilterOptions(msg.data);
+            })
+            .catch(error => console.error('Error fetching tags:', error));
+    }
+
+    function updateFilterOptions(tags) {
+        var filterContainer = document.getElementById('filter');
+
+        // 清空之前的选项
+        filterContainer.innerHTML = '';
+
+        // 添加所有分类选项
+        var allOption = document.createElement('label');
+        allOption.innerHTML = '';
+        filterContainer.appendChild(allOption);
+
+        // 添加其他分类标签的单选按钮
+        tags.forEach(tag => {
+            var tagOption = document.createElement('label');
+            tagOption.innerHTML = `<input type="checkbox" name="filter" value="${tag}"> ${tag}`;
+            filterContainer.appendChild(tagOption);
+        });
+    }
+</script>
+
+<script>
+    function search() {
+        var keyword = document.getElementById('search-input').value;
+        var searchType = document.querySelector('input[name="searchType"]:checked').value;
+        var selectedFilters = document.querySelectorAll('input[name="filter"]:checked');
+        var filters = Array.from(selectedFilters).map(checkbox => checkbox.value);
+
+        var sort = document.querySelector('input[name="sort"]:checked').value;
+
+        // 在这里实现搜索逻辑，使用 keyword, searchType, filters, sort 进行搜索
+        // var searchResults = performSearch(keyword, searchType, filters, sort);
+        // updateSearchResults(searchResults);
+    }
+
+    // 示例：更新搜索结果到页面中
+    function updateSearchResults(results) {
+        var searchResultsContainer = document.getElementById('search-results');
+        // 清空之前的搜索结果
+        searchResultsContainer.innerHTML = '';
+        // 将新的搜索结果添加到页面中
+        for (var i = 0; i < results.length; i++) {
+            var resultItem = document.createElement('div');
+            resultItem.textContent = results[i];
+            searchResultsContainer.appendChild(resultItem);
+        }
+    }
+</script>
+
+<script>
+    function logout() {
+        // 清空所有 cookie
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c
+                .replace(/^ +/, "")
+                .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        // 重定向到登录页面
+        window.location.href = "login.html"; // 请替换为你的登录页面地址
+    }
+</script>
+
+<script>
+    function navigateTo(page) {
+        // 使用 window.location.href 进行页面跳转
+        window.location.href = page;
+    }
+</script>
+</body>
+</html>
