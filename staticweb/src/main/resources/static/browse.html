@@ -221,6 +221,17 @@
             font-weight: bold;
         }
 
+        /* 默认状态 */
+        .like-label {
+            color: black; /* 或者其他默认颜色 */
+        }
+
+        /* 高亮状态 */
+        .like-label.liked {
+            color: blue; /* 或者其他高亮颜色 */
+            font-weight: bold; /* 可以添加其他样式以强调高亮状态 */
+        }
+
     </style>
 </head>
 <body>
@@ -428,16 +439,19 @@
 
         const commentsHtml = commentsData.map(comment => {
             const commentId = comment.commentId;
+
+            // 判断是否点赞
+            const isLikedClass = comment.liked ? ' liked' : '';
+
             return `
         <div class="comment">
             ${comment.fatherUserName !== null ? `<div class="parent-comment">
-                                                    <p><strong>回复此评论:</strong> ${comment.fatherUserName} 说 ${comment.fatherCommentContent}</p>
-                                                </div>` : ''}
+                <p><strong>回复此评论:</strong> ${comment.fatherUserName} 说 ${comment.fatherCommentContent}</p>
+            </div>` : ''}
             <div class="child-comments">
                 <div class="comment-details">
                     <p>${comment.userName} 说 ${comment.commentContent}</p>
-                    <p><strong>点赞</strong> ${comment.likesNum}</p>
-                    <p><strong>点踩</strong> ${comment.dislikesNum}</p>
+                    <p><strong class="like-label${isLikedClass}" onclick="toggleLike(this, '${commentId}')">点赞 <span id="likeCount-${commentId}">${comment.likesNum}</span></strong></p>
                     <p><strong>发表时间:</strong> ${comment.createTime}</p>
                     <p><strong>楼</strong> ${comment.floor}</p>
                 </div>
@@ -451,6 +465,45 @@
         }).join('');
 
         return commentsHtml;
+    }
+
+    async function toggleLike(likeLabel, commentId) {
+        // 找到对应评论的点赞数元素
+        const likeCountElement = document.getElementById("likeCount-" + commentId);
+
+        console.log(likeCountElement);
+
+        // 获取当前的点赞数
+        let currentLikes = parseInt(likeCountElement.innerText);
+
+        // 根据当前状态执行相应的操作
+        if (likeLabel.classList.contains('liked')) {
+            // 如果当前是高亮状态，则执行取消点赞的操作
+            const url = `http://localhost:10010/blog/comment/unlike?commentId=` + commentId;
+            fetch(url)
+                .catch(function (error) {
+                    throw new Error();
+                });
+
+            // 取消点赞时，点赞数减1
+            currentLikes--;
+        } else {
+            // 如果当前不是高亮状态，则执行点赞的操作
+            const url = `http://localhost:10010/blog/comment/like?commentId=` + commentId;
+            fetch(url)
+                .catch(function (error) {
+                    throw new Error();
+                });
+
+            // 点赞时，点赞数加1
+            currentLikes++;
+        }
+
+        // 更新点赞数显示
+        likeCountElement.innerText = currentLikes;
+
+        // 切换 liked 类
+        likeLabel.classList.toggle('liked');
     }
 
     // 显示回复框的函数

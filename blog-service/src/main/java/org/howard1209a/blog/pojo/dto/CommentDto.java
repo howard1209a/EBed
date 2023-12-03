@@ -21,7 +21,6 @@ public class CommentDto {
     private Long commentId;
     private String commentContent;
     private Integer likesNum;
-    private Integer dislikesNum;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Timestamp createTime;
     private Integer floor;
@@ -29,13 +28,13 @@ public class CommentDto {
     private Long fatherUserId;
     private String fatherUserName;
     private String fatherCommentContent;
+    private boolean liked;
 
     public CommentDto(Comment comment) {
         commentId = comment.getCommentId();
         userId = comment.getUserId();
         commentContent = comment.getCommentContent();
         likesNum = comment.getLikesNum();
-        dislikesNum = comment.getDislikesNum();
         createTime = comment.getCreateTime();
         floor = comment.getFloor();
     }

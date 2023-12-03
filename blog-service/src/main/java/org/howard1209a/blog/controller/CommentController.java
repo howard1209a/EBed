@@ -25,7 +25,20 @@ public class CommentController {
     }
 
     @GetMapping("/all")
-    public Response<List<CommentDto>> queryAllCommentForOneBlog(@RequestParam Long blogId) {
-        return commentService.queryAllCommentForOneBlog(blogId);
+    public Response<List<CommentDto>> queryAllCommentForOneBlog(@RequestParam Long blogId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        return commentService.queryAllCommentForOneBlog(cookie.getValue(), blogId);
+    }
+
+    @GetMapping("like")
+    public void likeOneComment(@RequestParam Long commentId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        commentService.likeOneComment(cookie.getValue(), commentId);
+    }
+
+    @GetMapping("unlike")
+    public void unlikeOneComment(@RequestParam Long commentId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        commentService.unlikeOneComment(cookie.getValue(), commentId);
     }
 }
