@@ -15,5 +15,6 @@ public class BlogLoadDto {
     private Blog blog;
     private String userName;
     private String url;
+    private boolean favorite;
     private List<String> labels;
 }

@@ -1,6 +1,7 @@
 package org.howard1209a.blog.service;
 
 import org.howard1209a.blog.feign.UserClient;
+import org.howard1209a.blog.mapper.BlogMapper;
 import org.howard1209a.blog.mapper.CommentMapper;
 import org.howard1209a.blog.mapper.RelationUserCommentLikeMapper;
 import org.howard1209a.blog.pojo.Comment;
@@ -31,6 +32,8 @@ public class CommentService {
     @Autowired
     private CommentMapper commentMapper;
     @Autowired
+    private BlogMapper blogMapper;
+    @Autowired
     private RelationUserCommentLikeMapper relationUserCommentLikeMapper;
     @Autowired
     private UserClient userClient;
@@ -39,6 +42,8 @@ public class CommentService {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         comment.setUserId(userState.getUserId());
         comment.setCommentId(snowflakeIdUtils.nextId());
+        // 更新博客记录、插入评论记录，不用上锁
+        blogMapper.plusCommentNum(comment.getBlogId());
         commentMapper.insertComment(comment);
     }
 

@@ -21,6 +21,8 @@ public class BlogDoc {
     private String content;
     private Timestamp createTime;
     private List<String> labels;
+    private Integer commentNum;
+    private Integer favouriteNum;
 
     public BlogDoc(Blog blog, String userName, List<String> labels) {
         this.id = blog.getBlogId();
@@ -31,5 +33,7 @@ public class BlogDoc {
         this.content = blog.getContent();
         this.createTime = blog.getCreateTime();
         this.labels = labels;
+        this.commentNum = blog.getCommentNum();
+        this.favouriteNum = blog.getFavouriteNum();
     }
 }

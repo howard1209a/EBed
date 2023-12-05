@@ -1,0 +1,13 @@
+server:
+  port: 7505
+spring:
+  application:
+    name: searchservice # 服务名称
+  cloud:
+    nacos:
+      server-addr: 10.129.0.31:8848
+logging:
+  level:
+    cn.itcast: debug
+    org.mybatis: DEBUG
+

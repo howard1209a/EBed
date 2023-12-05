@@ -106,7 +106,7 @@
             margin: 5px; /* 根据需要调整间距 */
         }
 
-        .like-button {
+        .favorite-button {
             background-color: #4CAF50; /* 绿色背景颜色 */
             color: white; /* 白色文字颜色 */
             border: none;
@@ -115,8 +115,20 @@
             border-radius: 5px;
         }
 
-        .like-button:hover {
+        .favorite-button:hover {
             background-color: #45a049; /* 按钮在悬停时的背景颜色 */
+        }
+
+        .unfavorite-button {
+            background-color: #e74c3c; /* 设置取消收藏状态的背景颜色 */
+            color: white; /* 设置取消收藏状态的文字颜色 */
+            /* 添加过渡效果 */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .unfavorite-button:hover {
+            /* 添加悬停时的背景颜色 */
+            background-color: #4CAF50;
         }
 
         .read-blog-button {
@@ -317,15 +329,20 @@
                     const authorParagraph = document.createElement("p");
                     authorParagraph.textContent = `作者: ${blogLoadDto.userName}`;
 
-                    const likeButton = document.createElement("button");
-                    likeButton.textContent = "❤️ 点赞";
-                    likeButton.classList.add("like-button");
-                    likeButton.onclick = () => likeImage(blogLoadDto.url);
+                    const favoriteButton = document.createElement("button");
+                    if (blogLoadDto.favorite) {
+                        favoriteButton.textContent = "取消收藏";
+                        favoriteButton.classList.add("unfavorite-button");
+                    } else {
+                        favoriteButton.textContent = "❤️ 收藏";
+                    }
+                    favoriteButton.classList.add("favorite-button");
+                    favoriteButton.onclick = (event) => favoriteBlog(event.target, blogLoadDto);  // 传递按钮元素作为参数
 
                     const readBlogButton = document.createElement("button");
                     readBlogButton.textContent = "阅读博客";
                     readBlogButton.classList.add("read-blog-button");
-                    readBlogButton.onclick = () => readBlog(blogLoadDto);
+                    readBlogButton.onclick = () => readBlog(blogLoadDto.blog.blogId);
 
                     const categoryTagsDiv = document.createElement("div");
                     categoryTagsDiv.classList.add("category-tags");
@@ -338,7 +355,7 @@
 
                     imageInfoDiv.appendChild(titleParagraph);
                     imageInfoDiv.appendChild(authorParagraph);
-                    imageInfoDiv.appendChild(likeButton);
+                    imageInfoDiv.appendChild(favoriteButton);
                     imageInfoDiv.appendChild(readBlogButton);
                     imageInfoDiv.appendChild(categoryTagsDiv);
 
@@ -355,17 +372,46 @@
             });
     }
 
-    function likeImage(imageUrl) {
-        // 处理点赞逻辑，例如向服务器发送点赞请求
-        console.log(`点赞图片: ${imageUrl}`);
+    function favoriteBlog(button, blogLoadDto) {
+        console.log(button)
+
+        // 获取按钮元素
+        const favoriteButton = button;
+
+        // 切换按钮的状态
+        if (favoriteButton.textContent === "❤️ 收藏") {
+            // 执行收藏操作
+            const url = `http://localhost:10010/blog/favorite?blogId=` + blogLoadDto.blog.blogId;
+            fetch(url)
+                .catch(function (error) {
+                    throw new Error();
+                });
+            favoriteButton.textContent = "取消收藏";
+            // 添加取消收藏状态的类
+            favoriteButton.classList.add("unfavorite-button");
+        } else {
+            // 执行取消收藏操作
+            const url = `http://localhost:10010/blog/unfavorite?blogId=` + blogLoadDto.blog.blogId;
+            fetch(url)
+                .catch(function (error) {
+                    throw new Error();
+                });
+            favoriteButton.textContent = "❤️ 收藏";
+            // 移除取消收藏状态的类
+            favoriteButton.classList.remove("unfavorite-button");
+        }
     }
 
-    async function readBlog(blogLoadDto) {
+    async function readBlog(blogId) {
         try {
+            const blogLoadDtoResponse = await fetch('http://localhost:10010/blog/queryOne?blogId=' + blogId);
+            const blogLoadDtoMsg = await blogLoadDtoResponse.json();
+            const blogLoadDto = blogLoadDtoMsg.data;
+
             // 发送GET请求获取多条评论
-            const commentsResponse = await fetch('http://localhost:10010/blog/comment/all?blogId=' + blogLoadDto.blog.blogId);
-            const msg = await commentsResponse.json();
-            const commentsData = msg.data;
+            const commentsResponse = await fetch('http://localhost:10010/blog/comment/all?blogId=' + blogId);
+            const commentsMsg = await commentsResponse.json();
+            const commentsData = commentsMsg.data;
 
             // 创建一个文本框元素
             const commentInput = document.createElement('input');
@@ -391,7 +437,9 @@
                     <p><strong>作者:</strong> ${blogLoadDto.userName}</p>
                     <p><strong>正文:</strong> ${blogLoadDto.blog.content}</p>
                     <p><strong>发布时间:</strong> ${blogLoadDto.blog.createTime}</p>
-                    <p><strong>类别:</strong> ${blogLoadDto.labels.join(', ')}</p>
+                    <p><strong>标签:</strong> ${blogLoadDto.labels.join(', ')}</p>
+                    <p><strong>评论数:</strong> ${blogLoadDto.blog.commentNum}</p>
+                    <p><strong>收藏数:</strong> ${blogLoadDto.blog.favouriteNum}</p>
                     <div class="comments-section">
                         ${commentsHtml}
                     </div>

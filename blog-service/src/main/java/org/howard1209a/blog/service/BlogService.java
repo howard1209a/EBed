@@ -5,6 +5,7 @@ import org.howard1209a.blog.feign.UserClient;
 import org.howard1209a.blog.mapper.BlogMapper;
 import org.howard1209a.blog.mapper.CommentMapper;
 import org.howard1209a.blog.mapper.LabelMapper;
+import org.howard1209a.blog.mapper.RelationUserBlogFavoriteMapper;
 import org.howard1209a.blog.pojo.*;
 import org.howard1209a.blog.pojo.dto.BlogDto;
 import org.howard1209a.blog.pojo.dto.BlogLoadDto;
@@ -18,8 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.howard1209a.blog.constant.BlogConstant.BROWSED_BLOG_KEY;
-import static org.howard1209a.blog.constant.BlogConstant.USER_STATE_KEY;
+import static org.howard1209a.blog.constant.BlogConstant.*;
 
 @Service
 public class BlogService {
@@ -32,6 +32,8 @@ public class BlogService {
     @Autowired
     private CommentMapper commentMapper;
     @Autowired
+    private RelationUserBlogFavoriteMapper relationUserBlogFavoriteMapper;
+    @Autowired
     private UserClient userClient;
     @Autowired
     private FileClient fileClient;
@@ -41,7 +43,7 @@ public class BlogService {
     public void publishOneBlog(BlogDto blogDto, Long blogId, String session) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         Long userId = userState.getUserId();
-        Blog blog = new Blog(blogId, userId, blogDto.getTitle(), blogDto.getImgId(), blogDto.getContent(), null);
+        Blog blog = new Blog(blogId, userId, blogDto.getTitle(), blogDto.getImgId(), blogDto.getContent(), null, null, null);
         blogMapper.insertOneBlog(blog);
     }
 
@@ -51,6 +53,7 @@ public class BlogService {
 
     public List<BlogLoadDto> browseLoad(String session, Integer loadNum) {
         BrowsedBlogList browsedBlogList = redisUtil.getObject(BROWSED_BLOG_KEY + session, BrowsedBlogList.class);
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         List<Long> list = browsedBlogList.getList();
         List<Blog> blogs;
         if (list.size() == 0) {
@@ -68,11 +71,7 @@ public class BlogService {
         }
         List<BlogLoadDto> res = new ArrayList<>();
         for (Blog blog : blogs) {
-            User user = userClient.queryInfoById(blog.getUserId());
-            Img img = fileClient.queryInfoById(blog.getImgId());
-            String url = "http://localhost:10010/file/img/download/" + img.getImgId() + "." + img.getImgType();
-            List<String> labels = labelMapper.queryLabelsForOneBlog(blog.getBlogId());
-            res.add(new BlogLoadDto(blog, user.getUserName(), url, labels));
+            res.add(blog2BlogLoadDto(userState, blog));
         }
 
         redisLockUtil.blockingGetLock(BROWSED_BLOG_KEY + session);
@@ -84,5 +83,38 @@ public class BlogService {
         redisUtil.setObject(BROWSED_BLOG_KEY + session, browsedBlogList);
         redisLockUtil.unlock(BROWSED_BLOG_KEY + session);
         return res;
+    }
+
+    public void favoriteBlog(String session, Long blogId) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        String lockKey = USER_BLOG_FAVORITE_RELATION + ":" + userState.getUserId() + ":" + blogId;
+        redisLockUtil.blockingGetLock(lockKey);
+        blogMapper.plusFavouriteNum(blogId);
+        relationUserBlogFavoriteMapper.insertOneFavorite(new RelationUserBlogFavorite(userState.getUserId(), blogId));
+        redisLockUtil.unlock(lockKey);
+    }
+
+    public void unfavoriteBlog(String session, Long blogId) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        String lockKey = USER_BLOG_FAVORITE_RELATION + ":" + userState.getUserId() + ":" + blogId;
+        redisLockUtil.blockingGetLock(lockKey);
+        blogMapper.subtractFavouriteNum(blogId);
+        relationUserBlogFavoriteMapper.deleteOneFavorite(new RelationUserBlogFavorite(userState.getUserId(), blogId));
+        redisLockUtil.unlock(lockKey);
+    }
+
+    public BlogLoadDto queryOneBlogById(String session, Long blogId) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        Blog blog = blogMapper.queryOneBlogById(blogId);
+        return blog2BlogLoadDto(userState, blog);
+    }
+
+    private BlogLoadDto blog2BlogLoadDto(UserState userState, Blog blog) {
+        User user = userClient.queryInfoById(blog.getUserId());
+        Img img = fileClient.queryInfoById(blog.getImgId());
+        String url = "http://localhost:10010/file/img/download/" + img.getImgId() + "." + img.getImgType();
+        List<String> labels = labelMapper.queryLabelsForOneBlog(blog.getBlogId());
+        boolean isFavorite = relationUserBlogFavoriteMapper.queryFavoriteByUserAndBlog(new RelationUserBlogFavorite(userState.getUserId(), blog.getBlogId())) != null;
+        return new BlogLoadDto(blog, user.getUserName(), url, isFavorite, labels);
     }
 }

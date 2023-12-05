@@ -47,4 +47,23 @@ public class BlogController {
         List<BlogLoadDto> blogLoadDtos = blogService.browseLoad(cookie.getValue(), loadNum);
         return new Response<>(true, blogLoadDtos);
     }
+
+    @GetMapping("favorite")
+    public void favoriteBlog(Long blogId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        blogService.favoriteBlog(cookie.getValue(), blogId);
+    }
+
+    @GetMapping("unfavorite")
+    public void unfavoriteBlog(Long blogId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        blogService.unfavoriteBlog(cookie.getValue(), blogId);
+    }
+
+    @GetMapping("queryOne")
+    public Response<BlogLoadDto> queryOneBlog(Long blogId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        BlogLoadDto blogLoadDto = blogService.queryOneBlogById(cookie.getValue(), blogId);
+        return new Response<>(true, blogLoadDto);
+    }
 }
