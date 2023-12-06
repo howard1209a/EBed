@@ -23,8 +23,12 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.wltea.analyzer.core.IKSegmenter;
+import org.wltea.analyzer.core.Lexeme;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest(classes = BlogApplication.class)
@@ -73,6 +77,16 @@ public class T1 {
             List<String> labels = labelMapper.queryLabelsForOneBlog(blog.getBlogId());
             // 2.1.转换为文档类型HotelDoc
             BlogDoc blogDoc = new BlogDoc(blog, user.getUserName(), labels);
+
+            StringReader reader = new StringReader(blogDoc.getTitle());
+            IKSegmenter segmenter = new IKSegmenter(reader, true);
+            Lexeme lexeme;
+            List<String> suggestion = new ArrayList<>();
+            while ((lexeme = segmenter.next()) != null) {
+                suggestion.add(lexeme.getLexemeText());
+            }
+            blogDoc.setSuggestion(suggestion);
+
             // 2.2.创建新增文档的Request对象
             request.add(new IndexRequest("blog")
                     .id(blogDoc.getId().toString())

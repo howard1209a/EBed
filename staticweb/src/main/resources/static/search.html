@@ -95,15 +95,6 @@
             margin-bottom: 20px;
         }
 
-        #search-input {
-            padding: 10px;
-            width: 60%;
-            margin-right: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            outline: none;
-        }
-
         button {
             padding: 10px 20px;
             background-color: #007bff;
@@ -136,6 +127,89 @@
             margin-top: 20px;
         }
 
+        /* 添加在每篇博客之间的间距和边框样式 */
+        .blog-item {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 标题样式 */
+        .blog-item h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        /* 作者、发布时间、标签等样式 */
+        .blog-item p {
+            margin: 0;
+            margin-bottom: 5px;
+        }
+
+        /* 收藏数、评论数样式 */
+        .blog-item p strong {
+            color: #4CAF50; /* 绿色，可以根据需要调整颜色 */
+        }
+
+        /* 内容样式 */
+        .blog-item p strong:after {
+            content: '';
+            margin-right: 5px;
+        }
+
+        .blog-item p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 整体容器样式 */
+        #search-results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between; /* 控制每行之间的间距 */
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 768px) {
+            .blog-item {
+                width: 100%; /* 在小屏幕上占据整个宽度 */
+            }
+        }
+
+        em {
+            color: red;
+            font-weight: bold; /* 可选，如果想要加粗显示 */
+        }
+
+        #search-input {
+            box-sizing: border-box;
+            padding: 10px;
+            width: 70%; /* 根据需要调整 */
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        /* 添加自动补全提示框样式 */
+        #search-suggestions {
+            position: absolute;
+            width: 60%;
+            left: 15%;
+            margin-top: 5px;
+            background-color: #fff;
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f1f1f1;
+        }
+
     </style>
 </head>
 <body>
@@ -166,8 +240,14 @@
     <div id="content">
         <!-- 全局搜索 -->
         <div id="search-container">
-            <input type="text" id="search-input" placeholder="输入关键字...">
-            <button onclick="search()">搜索</button>
+            <div id="search-wrapper">
+                <div id="search-input-wrapper">
+                    <input type="text" id="search-input" oninput="showSuggestions(this.value)"
+                           placeholder="输入关键字...">
+                    <button onclick="search()">搜索</button>
+                </div>
+                <div id="search-suggestions"></div>
+            </div>
 
             <div id="search-type">
                 <label>
@@ -177,41 +257,32 @@
                     <input type="radio" name="searchType" value="user"> 用户搜索
                 </label>
                 <label>
-                    <input type="radio" name="searchType" value="user"> 商品搜索
+                    <input type="radio" name="searchType" value="good"> 商品搜索
                 </label>
             </div>
 
             <!-- 多选分类标签 -->
             <div id="filter">
-                <label>
-                    <input type="checkbox" name="filter" value="all" checked> 所有分类
-                </label>
-                <label>
-                    <input type="checkbox" name="filter" value="标签1"> 标签1
-                </label>
-                <label>
-                    <input type="checkbox" name="filter" value="标签2"> 标签2
-                </label>
-                <label>
-                    <input type="checkbox" name="filter" value="标签3"> 标签3
-                </label>
-                <!-- 添加其他分类标签的复选框 -->
             </div>
 
             <div id="sort">
                 <label>
-                    <input type="radio" name="sort" value="likes" checked> 相似度
+                    <input type="radio" name="sort" value="相似度" checked> 相似度
                 </label>
                 <label>
-                    <input type="radio" name="sort" value="likes" checked> 点赞排序
+                    <input type="radio" name="sort" value="收藏数排序" checked> 收藏数排序
                 </label>
                 <label>
-                    <input type="radio" name="sort" value="comments"> 评论数排序
+                    <input type="radio" name="sort" value="评论数排序"> 评论数排序
                 </label>
                 <label>
-                    <input type="radio" name="sort" value="newest"> 新发布
+                    <input type="radio" name="sort" value="新发布"> 新发布
                 </label>
             </div>
+        </div>
+        <!-- 搜索结果数量 -->
+        <div>
+            <p class="result-count" id="result-count"></p>
         </div>
         <!-- 搜索结果区域 -->
         <div id="search-results">
@@ -234,6 +305,28 @@
             .then(msg => {
                 // 处理获取到的标签数据
                 updateFilterOptions(msg.data);
+            })
+            .catch(error => console.error('Error fetching tags:', error));
+    }
+
+    function showSuggestions(input) {
+        const suggestionList = document.getElementById("search-suggestions");
+        suggestionList.innerHTML = "";
+
+        fetch('http://localhost:10010/search/blog/prefix?prefix=' + input)
+            .then(response => response.json())
+            .then(msg => {
+                const suggestions = msg.data;
+                suggestions.forEach(suggestion => {
+                    const li = document.createElement("div");
+                    li.classList.add("suggestion-item");
+                    li.textContent = suggestion;
+                    li.addEventListener("click", () => {
+                        document.getElementById("search-input").value = suggestion;
+                        suggestionList.innerHTML = "";
+                    });
+                    suggestionList.appendChild(li);
+                });
             })
             .catch(error => console.error('Error fetching tags:', error));
     }
@@ -267,9 +360,34 @@
 
         var sort = document.querySelector('input[name="sort"]:checked').value;
 
-        // 在这里实现搜索逻辑，使用 keyword, searchType, filters, sort 进行搜索
-        // var searchResults = performSearch(keyword, searchType, filters, sort);
-        // updateSearchResults(searchResults);
+        console.log(keyword);
+        console.log(searchType);
+        console.log(filters);
+        console.log(sort);
+
+        let requestData = {
+            searchContent: keyword,
+            labels: filters,
+            sortManner: sort
+        }
+
+        // 构建 Fetch 请求
+        fetch('http://localhost:10010/search/blog/info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => response.json())
+            .then(msg => {
+                updateSearchResults(msg.data);
+                console.log(msg.data);
+            })
+            .catch(error => {
+                // 处理错误
+                console.error('Error:', error);
+            });
     }
 
     // 示例：更新搜索结果到页面中
@@ -277,10 +395,29 @@
         var searchResultsContainer = document.getElementById('search-results');
         // 清空之前的搜索结果
         searchResultsContainer.innerHTML = '';
+
+        // 更新查询结果数量
+        var resultCountElement = document.getElementById('result-count');
+        resultCountElement.textContent = `共有 ${results.length} 条查询结果`;
+
         // 将新的搜索结果添加到页面中
         for (var i = 0; i < results.length; i++) {
+            // 创建一个包含博客信息的 div
             var resultItem = document.createElement('div');
-            resultItem.textContent = results[i];
+            resultItem.classList.add('blog-item'); // 添加一个 CSS 类，用于样式控制
+
+            // 显示博客信息
+            resultItem.innerHTML = `
+        <h2>${results[i].title}</h2>
+        <p><strong>作者:</strong> ${results[i].userName}</p>
+        <p><strong>发布时间:</strong> ${results[i].createTime}</p>
+        <p><strong>标签:</strong> ${results[i].labels.join(', ')}</p>
+        <p><strong>内容:</strong> ${results[i].content}</p>
+        <p><strong>收藏数:</strong> ${results[i].favouriteNum}</p>
+        <p><strong>评论数:</strong> ${results[i].commentNum}</p>
+    `;
+
+            // 将 div 添加到搜索结果容器中
             searchResultsContainer.appendChild(resultItem);
         }
     }

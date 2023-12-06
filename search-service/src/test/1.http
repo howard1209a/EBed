@@ -1,0 +1,13 @@
+POST http://localhost:7505/blog/es/search
+Content-Type: application/json
+
+{
+  "searchContent": "整体的",
+  "labels": [
+    "暖色调",
+    "物品"
+  ],
+  "sortManner": "新发布"
+}
+
+###

@@ -5,21 +5,25 @@ import org.howard1209a.search.pojo.dto.BlogSearchDto;
 import org.howard1209a.search.pojo.dto.Response;
 import org.howard1209a.search.service.BlogESService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/blog/es")
+@RequestMapping("/search/blog")
 public class BlogESController {
     @Autowired
     private BlogESService blogESService;
 
-    @PostMapping("search")
-    public Response<List<BlogDoc>> search(@RequestBody BlogSearchDto blogSearchDto) {
-        blogESService.search(blogSearchDto)
+    @PostMapping("info")
+    public Response<List<BlogDoc>> searchInfo(@RequestBody BlogSearchDto blogSearchDto) {
+        List<BlogDoc> blogDocs = blogESService.searchInfo(blogSearchDto);
+        return new Response<>(true, blogDocs);
+    }
+
+    @GetMapping("prefix")
+    public Response<List<String>> searchPrefix(@RequestParam String prefix) {
+        List<String> suggestions = blogESService.searchPrefix(prefix);
+        return new Response<>(true, suggestions);
     }
 }

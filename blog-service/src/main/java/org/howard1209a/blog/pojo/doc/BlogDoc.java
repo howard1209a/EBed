@@ -23,6 +23,7 @@ public class BlogDoc {
     private List<String> labels;
     private Integer commentNum;
     private Integer favouriteNum;
+    private List<String> suggestion;
 
     public BlogDoc(Blog blog, String userName, List<String> labels) {
         this.id = blog.getBlogId();
