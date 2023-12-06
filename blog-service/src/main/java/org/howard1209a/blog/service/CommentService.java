@@ -1,25 +1,29 @@
 package org.howard1209a.blog.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.howard1209a.blog.constant.MqConstant;
 import org.howard1209a.blog.feign.UserClient;
 import org.howard1209a.blog.mapper.BlogMapper;
 import org.howard1209a.blog.mapper.CommentMapper;
 import org.howard1209a.blog.mapper.RelationUserCommentLikeMapper;
-import org.howard1209a.blog.pojo.Comment;
-import org.howard1209a.blog.pojo.RelationUserCommentLike;
-import org.howard1209a.blog.pojo.User;
-import org.howard1209a.blog.pojo.UserState;
+import org.howard1209a.blog.pojo.*;
+import org.howard1209a.blog.pojo.doc.BlogDoc;
 import org.howard1209a.blog.pojo.dto.CommentDto;
 import org.howard1209a.blog.pojo.dto.Response;
+import org.howard1209a.blog.util.MQUtil;
 import org.howard1209a.blog.util.RedisLockUtil;
 import org.howard1209a.blog.util.RedisUtil;
 import org.howard1209a.blog.util.SnowflakeIdUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.howard1209a.blog.constant.BlogConstant.USER_COMMENT_LIKE_RELATION;
 import static org.howard1209a.blog.constant.BlogConstant.USER_STATE_KEY;
+import static org.howard1209a.blog.constant.MqConstant.MYSQL_ES_SYNC_BLOG;
 
 @Service
 public class CommentService {
@@ -37,14 +41,27 @@ public class CommentService {
     private RelationUserCommentLikeMapper relationUserCommentLikeMapper;
     @Autowired
     private UserClient userClient;
+    @Autowired
+    private BlogService blogService;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private MQUtil mqUtil;
 
     public void publishOneComment(String session, Comment comment) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         comment.setUserId(userState.getUserId());
         comment.setCommentId(snowflakeIdUtils.nextId());
-        // 更新博客记录、插入评论记录，不用上锁
-        blogMapper.plusCommentNum(comment.getBlogId());
+        // 插入评论记录
         commentMapper.insertComment(comment);
+
+        // 接下来更新博客记录(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
+        redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + comment.getBlogId());
+        blogMapper.plusCommentNum(comment.getBlogId());
+
+        mqUtil.sendBlog(comment.getBlogId());
     }
 
     public Response<List<CommentDto>> queryAllCommentForOneBlog(String session, Long blogId) {

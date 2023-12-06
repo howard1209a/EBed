@@ -1,5 +1,7 @@
 package org.howard1209a.blog.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.howard1209a.blog.constant.MqConstant;
 import org.howard1209a.blog.feign.FileClient;
 import org.howard1209a.blog.feign.UserClient;
 import org.howard1209a.blog.mapper.BlogMapper;
@@ -7,19 +9,23 @@ import org.howard1209a.blog.mapper.CommentMapper;
 import org.howard1209a.blog.mapper.LabelMapper;
 import org.howard1209a.blog.mapper.RelationUserBlogFavoriteMapper;
 import org.howard1209a.blog.pojo.*;
+import org.howard1209a.blog.pojo.doc.BlogDoc;
 import org.howard1209a.blog.pojo.dto.BlogDto;
 import org.howard1209a.blog.pojo.dto.BlogLoadDto;
-import org.howard1209a.blog.util.RedisLockUtil;
-import org.howard1209a.blog.util.RedisUtil;
-import org.howard1209a.blog.util.SnowflakeIdUtils;
-import org.howard1209a.blog.util.Utils;
+import org.howard1209a.blog.util.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.wltea.analyzer.core.IKSegmenter;
+import org.wltea.analyzer.core.Lexeme;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.howard1209a.blog.constant.BlogConstant.*;
+import static org.howard1209a.blog.constant.MqConstant.MYSQL_ES_SYNC_BLOG;
 
 @Service
 public class BlogService {
@@ -39,12 +45,30 @@ public class BlogService {
     private FileClient fileClient;
     @Autowired
     private RedisLockUtil redisLockUtil;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private LabelService labelService;
+    @Autowired
+    private SnowflakeIdUtils snowflakeIdUtils;
+    @Autowired
+    private MQUtil mqUtil;
 
-    public void publishOneBlog(BlogDto blogDto, Long blogId, String session) {
+    public void publishOneBlog(BlogDto blogDto, String session) {
+        Long blogId = snowflakeIdUtils.nextId();
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         Long userId = userState.getUserId();
         Blog blog = new Blog(blogId, userId, blogDto.getTitle(), blogDto.getImgId(), blogDto.getContent(), null, null, null);
-        blogMapper.insertOneBlog(blog);
+
+        // 接下来新增博客(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
+        redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + blogId);
+
+        blogMapper.insertOneBlog(blog); // 持久化blog
+        labelService.saveRelation(blogDto.getLabels(), blogId); // 持久化label关系
+
+        mqUtil.sendBlog(blogId);
     }
 
     public void browseRefresh(String session) {
@@ -87,20 +111,24 @@ public class BlogService {
 
     public void favoriteBlog(String session, Long blogId) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
-        String lockKey = USER_BLOG_FAVORITE_RELATION + ":" + userState.getUserId() + ":" + blogId;
-        redisLockUtil.blockingGetLock(lockKey);
+
+        // 接下来更新博客记录(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
+        redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + blogId);
         blogMapper.plusFavouriteNum(blogId);
         relationUserBlogFavoriteMapper.insertOneFavorite(new RelationUserBlogFavorite(userState.getUserId(), blogId));
-        redisLockUtil.unlock(lockKey);
+
+        mqUtil.sendBlog(blogId);
     }
 
     public void unfavoriteBlog(String session, Long blogId) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
-        String lockKey = USER_BLOG_FAVORITE_RELATION + ":" + userState.getUserId() + ":" + blogId;
-        redisLockUtil.blockingGetLock(lockKey);
+
+        // 接下来更新博客记录(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
+        redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + blogId);
         blogMapper.subtractFavouriteNum(blogId);
         relationUserBlogFavoriteMapper.deleteOneFavorite(new RelationUserBlogFavorite(userState.getUserId(), blogId));
-        redisLockUtil.unlock(lockKey);
+
+        mqUtil.sendBlog(blogId);
     }
 
     public BlogLoadDto queryOneBlogById(String session, Long blogId) {

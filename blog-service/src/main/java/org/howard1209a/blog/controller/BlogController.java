@@ -21,18 +21,14 @@ import java.util.List;
 @RequestMapping("/blog")
 public class BlogController {
     @Autowired
-    private SnowflakeIdUtils snowflakeIdUtils;
-    @Autowired
     private BlogService blogService;
     @Autowired
     private LabelService labelService;
 
     @PostMapping("publish")
     public void publishOneBlog(@RequestBody BlogDto blogDto, HttpServletRequest request) {
-        long blogId = snowflakeIdUtils.nextId();
         Cookie cookie = Utils.getCookie("session", request);
-        blogService.publishOneBlog(blogDto, blogId, cookie.getValue());
-        labelService.saveRelation(blogDto.getLabels(), blogId);
+        blogService.publishOneBlog(blogDto, cookie.getValue());
     }
 
     @GetMapping("browse/refresh")

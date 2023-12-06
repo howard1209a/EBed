@@ -1,5 +1,6 @@
 package org.howard1209a.search.pojo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,5 @@ public class BlogDoc {
     private List<String> labels;
     private Integer commentNum;
     private Integer favouriteNum;
+    private List<String> suggestion;
 }

@@ -18,6 +18,12 @@ spring:
         max-idle: 8
         min-idle: 0
         max-wait: 100ms
+  rabbitmq:
+    host: 10.129.0.31 # 主机名
+    port: 5672 # 端口
+    virtual-host: / # 虚拟主机
+    username: howard1209a # 用户名
+    password: Dyp20001209 # 密码
   cloud:
     nacos:
       server-addr: 10.129.0.31:8848

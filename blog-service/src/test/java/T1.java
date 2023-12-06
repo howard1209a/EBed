@@ -88,9 +88,10 @@ public class T1 {
             blogDoc.setSuggestion(suggestion);
 
             // 2.2.创建新增文档的Request对象
+            String json = objectMapper.writeValueAsString(blogDoc);
             request.add(new IndexRequest("blog")
                     .id(blogDoc.getId().toString())
-                    .source(objectMapper.writeValueAsString(blogDoc), XContentType.JSON));
+                    .source(json, XContentType.JSON));
         }
         // 3.发送请求
         client.bulk(request, RequestOptions.DEFAULT);

@@ -2,10 +2,12 @@ package org.howard1209a.search.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -19,6 +21,7 @@ import org.elasticsearch.search.suggest.SuggestBuilders;
 import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
 import org.howard1209a.search.pojo.BlogDoc;
 import org.howard1209a.search.pojo.dto.BlogSearchDto;
+import org.howard1209a.search.util.RedisLockUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,12 +30,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.howard1209a.search.constant.MqConstant.MYSQL_ES_SYNC_BLOG;
+
 @Service
 public class BlogESService {
     @Autowired
     private RestHighLevelClient client;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private RedisLockUtil redisLockUtil;
 
 
     public List<BlogDoc> searchInfo(BlogSearchDto blogSearchDto) {
@@ -146,6 +153,22 @@ public class BlogESService {
             return list;
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    // 新增和修改都是put操作
+    public void putBlogDoc(String json) {
+        Long blogId = null;
+        try {
+            blogId = objectMapper.readValue(json, BlogDoc.class).getId();
+            IndexRequest request = new IndexRequest("blog").id(blogId.toString());
+            request.source(json, XContentType.JSON);
+            client.index(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            // 双库同步完成，锁要解开
+            redisLockUtil.unlock(MYSQL_ES_SYNC_BLOG + blogId);
         }
     }
 }
