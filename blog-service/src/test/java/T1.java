@@ -52,7 +52,7 @@ public class T1 {
 
     @Test
     public void t1() {
-        String[] labels = new String[]{"色彩"};
+        String[] labels = new String[]{"色彩", "自然风景", "建筑", "人物"};
         for (String label : labels) {
             labelMapper.insertOneLabel(new Label(snowflakeIdUtils.nextId(), label));
         }
