@@ -1,3 +1,10 @@
+POST http://localhost:80/api/item
+Content-Type: application/x-www-form-urlencoded
+
+id = 99 &
+content = new-element
+
+###
 POST http://localhost:10010/file/img/modify
 Content-Type: application/json
 Cookie: Idea-aef4b63f=7487860a-76a2-48ee-b8cc-123a8d20f97c; session=1179726837329309696
@@ -10,6 +17,8 @@ Cookie: Idea-aef4b63f=7487860a-76a2-48ee-b8cc-123a8d20f97c; session=117972683732
 }
 
 ###
+
+
 
 
 

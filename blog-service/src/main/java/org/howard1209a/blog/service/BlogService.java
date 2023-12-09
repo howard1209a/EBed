@@ -26,6 +26,7 @@ import java.util.List;
 
 import static org.howard1209a.blog.constant.BlogConstant.*;
 import static org.howard1209a.blog.constant.MqConstant.MYSQL_ES_SYNC_BLOG;
+import static org.howard1209a.blog.constant.UserConstant.*;
 
 @Service
 public class BlogService {
@@ -62,6 +63,9 @@ public class BlogService {
         Long userId = userState.getUserId();
         Blog blog = new Blog(blogId, userId, blogDto.getTitle(), blogDto.getImgId(), blogDto.getContent(), null, null, null);
 
+        // 发布一篇博客，尝试加一下自己的经验值
+        userClient.addExp(userId, EXP_LIMIT_PUBLISHBLOG_LIMIT_HASHKEY);
+
         // 接下来新增博客(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
         redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + blogId);
 
@@ -72,6 +76,10 @@ public class BlogService {
     }
 
     public void browseRefresh(String session) {
+        // 阅读博客尝试加一下经验值
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        userClient.addExp(userState.getUserId(), EXP_LIMIT_READBLOG_LIMIT_HASHKEY);
+
         redisUtil.setObject(BROWSED_BLOG_KEY + session, new BrowsedBlogList(new ArrayList<>()));
     }
 
@@ -111,6 +119,10 @@ public class BlogService {
 
     public void favoriteBlog(String session, Long blogId) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+
+        // 加一下博客所有者的经验值
+        Blog blog = blogMapper.queryOneBlogById(blogId);
+        userClient.addExp(blog.getUserId(), EXP_BLOG_FAVORITE_BY_OTHER);
 
         // 接下来更新博客记录(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
         redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + blogId);

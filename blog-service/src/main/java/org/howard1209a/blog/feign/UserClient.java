@@ -9,4 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface UserClient {
     @GetMapping("/user/info/id")
     public User queryInfoById(@RequestParam("userId") Long userId);
+
+    @GetMapping("/user/common/exp/add")
+    public void addExp(@RequestParam("userId") Long userId, @RequestParam("addExpType") String addExpType);
 }

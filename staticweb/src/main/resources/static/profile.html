@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>图床网站</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -226,6 +228,34 @@
             background-color: #45a049;
         }
 
+        /* 活跃度热力图容器样式 */
+        #heatmap-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 四个月 */
+            gap: 20px; /* 调整月份之间的间距 */
+        }
+
+        /* 月份容器样式 */
+        .heatmap-month {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); /* 一周七天 */
+            gap: 5px;
+        }
+
+        /* 热力图小格子样式 */
+        .heatmap-cell {
+            width: 25px;
+            height: 25px;
+            border: 1px solid #ddd;
+            background-color: #f2f2f2; /* 默认颜色，可以根据需要调整 */
+        }
+
+        /* 一个月的热力图组样式 */
+        .heatmap-group {
+            display: flex;
+            flex-direction: column; /* 将子元素垂直排列 */
+        }
+
     </style>
 </head>
 <body>
@@ -248,7 +278,7 @@
         </div>
         <div class="user-info">
             <!-- 在这里显示用户信息，例如用户名、头像等 -->
-            用户名
+            <div class="user-info-inner"></div>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
@@ -262,22 +292,25 @@
                 <div id="avatar-section">
                     <div class="avatar-wrapper">
                         <!-- 在这里插入头像的内容 -->
-                        <img src="path/to/avatar.jpg" alt="用户头像">
+                        <img id="profilePhoto" src="http://localhost:10010/user/common/profilePhoto/download"
+                             alt="用户头像">
                     </div>
                     <!-- 上传按钮 -->
+                    <!-- 在上传按钮的下方添加一个input元素 -->
                     <div class="upload-btn-wrapper">
                         <button id="upload-avatar-btn" onclick="uploadAvatar()">上传头像</button>
+                        <input type="file" id="fileInput" style="display:none" accept="image/*">
                     </div>
                 </div>
                 <!-- 用户名简要信息区域 -->
                 <div id="username-info" style="display: flex; justify-content: space-between;">
                     <!-- 从左到右依次显示用户名、等级、徽章 -->
                     <div class="info-item">
-                        <p>JohnDoe</p>
+                        <p id="userName">JohnDoe</p>
                         <button onclick="editUsername()">修改用户名</button>
                     </div>
                     <div class="info-item">
-                        <p>等级 5</p>
+                        <p id="exp">等级 5 [经验值200/1000]</p>
                     </div>
                     <div class="info-item">
                         <p>徽章</p>
@@ -321,13 +354,79 @@
         <!-- 活跃度热力图区域 -->
         <div id="activity-heatmap">
             <h2>活跃度热力图</h2>
-            <!-- 在这里插入活跃度热力图的内容 -->
+            <div id="heatmap-container">
+                <!-- 6个月的热力图组 -->
+                <div class="heatmap-group">
+                    <div class="month-label">Month 1</div>
+                    <div class="heatmap-month" id="month1"></div>
+                </div>
+                <div class="heatmap-group">
+                    <div class="month-label">Month 2</div>
+                    <div class="heatmap-month" id="month2"></div>
+                </div>
+                <div class="heatmap-group">
+                    <div class="month-label">Month 3</div>
+                    <div class="heatmap-month" id="month3"></div>
+                </div>
+                <div class="heatmap-group">
+                    <div class="month-label">Month 4</div>
+                    <div class="heatmap-month" id="month4"></div>
+                </div>
+            </div>
+
+            <!-- 新添加的 div 区域，水平放置五个小格子 -->
+            <div id="color-gradient-container" style="display: flex; margin-top: 20px;">
+                <div style="margin-right: 20px">Less</div>
+                <div class="heatmap-cell" style="background-color: rgb(244,239,239);"></div>
+                <div class="heatmap-cell" style="background-color: rgb(201,251,201);"></div>
+                <div class="heatmap-cell" style="background-color: rgb(104,251,104);"></div>
+                <div class="heatmap-cell" style="background-color: rgb(20,201,20);"></div>
+                <div class="heatmap-cell" style="background-color: rgb(4,132,4);"></div>
+                <div style="margin-left: 20px">More</div>
+            </div>
         </div>
 
         <!-- 用户动态区域 -->
         <div id="user-activity">
             <h2>用户动态</h2>
-            <!-- 在这里插入显示用户动态的内容 -->
+            <!-- 动态1 -->
+            <div class="user-activity-item">
+                <!-- 用户信息区域 -->
+                <div class="user-info-area">
+                    <img src="path/to/user-avatar1.jpg" alt="用户头像">
+                    <p>用户名1</p>
+                </div>
+                <!-- 动态内容区域 -->
+                <div class="activity-content-area">
+                    <p>这是用户1的动态内容。</p>
+                </div>
+                <!-- 操作区域 -->
+                <div class="action-area">
+                    <button>赞</button>
+                    <button>评论</button>
+                </div>
+            </div>
+
+            <!-- 动态2 -->
+            <div class="user-activity-item">
+                <!-- 用户信息区域 -->
+                <div class="user-info-area">
+                    <img src="path/to/user-avatar2.jpg" alt="用户头像">
+                    <p>用户名2</p>
+                </div>
+                <!-- 动态内容区域 -->
+                <div class="activity-content-area">
+                    <p>这是用户2的动态内容。</p>
+                </div>
+                <!-- 操作区域 -->
+                <div class="action-area">
+                    <button>赞</button>
+                    <button>评论</button>
+                </div>
+            </div>
+
+            <!-- 添加更多动态... -->
+
         </div>
     </div>
 </div>
@@ -335,12 +434,69 @@
 
 <script>
     function uploadAvatar() {
-        // 在这里处理上传头像的逻辑
-        alert("上传头像功能尚未实现");
+        // 触发文件选择对话框
+        document.getElementById('fileInput').click();
     }
+
+    // 添加文件选择监听器
+    document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+
+    // 处理用户选择的文件
+    function handleFileSelect(event) {
+        const fileInput = event.target;
+        const files = fileInput.files;
+
+        if (files.length > 0) {
+            const selectedFile = files[0];
+
+            // 发送选中的文件到后端，这里使用了Fetch API
+            const formData = new FormData();
+            formData.append('avatar', selectedFile);
+
+            fetch('http://localhost:10010/user/common/profilePhoto/upload', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => {
+                    // 重新加载图片
+                    let img = document.getElementById("profilePhoto");
+                    let originalSrc = img.src;
+                    img.src = originalSrc + "?timestamp=" + new Date().getTime();
+                })
+                .catch(error => {
+                    // 处理上传失败的情况
+                    console.error('上传失败', error);
+                });
+        }
+    }
+
     function editUsername() {
-        // 在这里处理修改用户名的逻辑
-        alert("修改用户名功能尚未实现");
+        // 使用SweetAlert2模态框获取用户输入
+        Swal.fire({
+            title: '修改用户名',
+            input: 'text',
+            inputValue: '',  // 设置默认值，可以根据实际情况修改
+            showCancelButton: true,
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+            inputValidator: (value) => {
+                // 输入验证逻辑，可以根据需要自定义
+                if (!value) {
+                    return '用户名不能为空';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const newUsername = result.value;
+                fetch('http://localhost:10010/user/common/userName/update?userName=' + newUsername)
+                    .then(response => {
+                        updateUserName();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching username:', error);
+                    });
+            }
+        });
     }
 
     function openSettings() {
@@ -360,9 +516,7 @@
         // 在这里处理修改描述的逻辑
         alert("修改描述功能尚未实现");
     }
-</script>
 
-<script>
     function logout() {
         // 清空所有 cookie
         document.cookie.split(";").forEach((c) => {
@@ -374,13 +528,77 @@
         // 重定向到登录页面
         window.location.href = "login.html"; // 请替换为你的登录页面地址
     }
-</script>
 
-<script>
     function navigateTo(page) {
         // 使用 window.location.href 进行页面跳转
         window.location.href = page;
     }
+
+    function updateUserName() {
+        fetch('http://localhost:10010/user/login/userInfo')
+            .then(response => response.json())
+            .then(msg => {
+                document.getElementById("userName").innerHTML = msg.data;
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+            });
+    }
+</script>
+
+<script>
+    // 模拟用户活跃度数据，这里使用随机数
+    function generateRandomActivity() {
+        return Math.floor(Math.random() * 10); // 随机数范围可以根据实际情况调整
+    }
+
+    // 生成四个月的热力图
+    function generateHeatmap() {
+        for (let month = 1; month <= 6; month++) {
+            const monthContainer = document.getElementById(`month${month}`);
+
+            for (let day = 1; day <= 30; day++) { // 每个月假设30天
+                const activityLevel = generateRandomActivity(); // 模拟活跃度
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+
+                // 根据活跃度设置颜色深度，绿色越深
+                const colorIntensity = Math.floor((activityLevel / 10) * 150); // 控制深度的范围
+                const color = `rgb(0, ${255 - colorIntensity}, 0)`;
+                cell.style.backgroundColor = color;
+
+                monthContainer.appendChild(cell);
+            }
+        }
+    }
+
+    // 调用生成热力图的函数
+    generateHeatmap();
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 页面加载时发送 fetch 请求获取用户名
+        fetch('http://localhost:10010/user/login/userInfo')
+            .then(response => response.json())
+            .then(msg => {
+                // 更新 user-info 标签的内容
+                document.querySelector('.user-info-inner').innerHTML = msg.data;
+                document.getElementById("userName").innerHTML = msg.data;
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+            });
+        // 页面加载时发送 fetch 请求获取用户经验值
+        fetch('http://localhost:10010/user/common/exp/select')
+            .then(response => response.json())
+            .then(msg => {
+                const data = msg.data;
+                document.getElementById("exp").innerHTML = "等级 " + data.level + " [经验值" + data.exp + "/" + data.upperBound + "]";
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+            });
+    });
 </script>
 </body>
 </html>

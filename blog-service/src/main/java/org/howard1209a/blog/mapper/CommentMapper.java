@@ -31,4 +31,7 @@ public interface CommentMapper {
 
     @Update("update comment set likes_num = likes_num - 1 where comment_id = #{commentId}")
     void subtractLikeForOneComment(Long commentId);
+
+    @Select("select user_id from comment where comment_id = #{commentId}")
+    Long queryUserIdByCommentId(Long commentId);
 }

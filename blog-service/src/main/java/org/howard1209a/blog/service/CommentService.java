@@ -24,6 +24,8 @@ import java.util.*;
 import static org.howard1209a.blog.constant.BlogConstant.USER_COMMENT_LIKE_RELATION;
 import static org.howard1209a.blog.constant.BlogConstant.USER_STATE_KEY;
 import static org.howard1209a.blog.constant.MqConstant.MYSQL_ES_SYNC_BLOG;
+import static org.howard1209a.blog.constant.UserConstant.EXP_COMMENT_LIKE_BY_OTHER;
+import static org.howard1209a.blog.constant.UserConstant.EXP_LIMIT_LIKECOMMENT_LIMIT_HASHKEY;
 
 @Service
 public class CommentService {
@@ -105,6 +107,10 @@ public class CommentService {
         commentMapper.plusLikeForOneComment(commentId);
         relationUserCommentLikeMapper.insertOneLikeRelation(new RelationUserCommentLike(userState.getUserId(), commentId));
         redisLockUtil.unlock(lockKey);
+
+        userClient.addExp(userState.getUserId(), EXP_LIMIT_LIKECOMMENT_LIMIT_HASHKEY); // 尝试加一下自己的经验值
+        Long userId = commentMapper.queryUserIdByCommentId(commentId);
+        userClient.addExp(userId, EXP_COMMENT_LIKE_BY_OTHER); // 加被点赞人的经验值
     }
 
     public void unlikeOneComment(String session, Long commentId) {

@@ -16,4 +16,10 @@ public class User {
     private String email;
     private Timestamp createTime;
     private Timestamp updateTime;
+    private Integer exp;
+    private Integer funNum;
+    private Integer followNum;
+    private Integer likeNum;
+    private String selfIntroduction;
+    private String profilePhotoType;
 }

@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @SpringBootTest(classes = UserApplication.class)
@@ -16,14 +17,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 @Slf4j
 public class T1 {
     @Autowired
-    private RedisTemplate<String,Object> redisTemplate;
+    private RedisTemplate<String,String> redisTemplate;
     @Autowired
     private RegisterMapper registerMapper;
     @Autowired
     private FileClient fileClient;
     @Test
     public void t1() {
-        redisTemplate.opsForHash().put("hhhhhh","firstshuxing","howard1");
-        redisTemplate.opsForHash().put("hhhhhh","secondshuxing","howard1");
+        redisTemplate.opsForHash().put("k1","username","howard1209");
+        redisTemplate.opsForHash().put("k1","password","123456");
+        String object = (String) redisTemplate.opsForHash().get("k1", "username");
+        System.out.println(object);
     }
 }
