@@ -4,15 +4,15 @@ spring:
   application:
     name: searchservice # 服务名称
   rabbitmq:
-    host: 10.129.0.31 # 主机名
+    host: 10.29.186.231 # 主机名
     port: 5672 # 端口
     virtual-host: / # 虚拟主机
     username: howard1209a # 用户名
-    password: Dyp20001209 # 密码
+    password: 123456 # 密码
   redis:
-    host: 10.129.0.31
+    host: 43.138.30.47
     port: 6379
-    password: Dyp20001209
+    password: 123456
     lettuce:
       pool:
         max-active: 8
@@ -21,7 +21,7 @@ spring:
         max-wait: 100ms
   cloud:
     nacos:
-      server-addr: 10.129.0.31:8848
+      server-addr: 10.29.186.231:8848
 logging:
   level:
     cn.itcast: debug

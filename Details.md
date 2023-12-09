@@ -182,58 +182,80 @@ CREATE TABLE `user`
 
 ### blog索引
 
-```json
-PUT /blog
-{
-  "mappings": {
-    "properties": {
-      "comment_num": {
-        "type": "integer",
-        "index": false
-      },
-      "content": {
-        "type": "text",
-        "analyzer": "ik_max_word"
-      },
-      "create_time": {
-        "type": "date",
-        "index": false
-      },
-      "favourite_num": {
-        "type": "integer",
-        "index": false
-      },
-      "id": {
-        "type": "long",
-        "index": false
-      },
-      "img_id": {
-        "type": "long",
-        "index": false
-      },
-      "labels": {
-        "type": "keyword"
-      },
-      "suggestion": {
-        "type": "completion",
-        "analyzer": "keyword",
-        "preserve_separators": true,
-        "preserve_position_increments": true,
-        "max_input_length": 50
-      },
-      "title": {
-        "type": "text",
-        "analyzer": "ik_max_word"
-      },
-      "user_id": {
-        "type": "long",
-        "index": false
-      },
-      "user_name": {
-        "type": "text",
-        "analyzer": "ik_max_word"
-      }
-    }
-  }
-}
-```
+- 建立索引
+   ```json
+   PUT /blog
+   {
+     "mappings": {
+       "properties": {
+         "comment_num": {
+           "type": "integer",
+           "index": false
+         },
+         "content": {
+           "type": "text",
+           "analyzer": "ik_max_word"
+         },
+         "create_time": {
+           "type": "date",
+           "index": false
+         },
+         "favourite_num": {
+           "type": "integer",
+           "index": false
+         },
+         "id": {
+           "type": "long",
+           "index": false
+         },
+         "img_id": {
+           "type": "long",
+           "index": false
+         },
+         "labels": {
+           "type": "keyword"
+         },
+         "suggestion": {
+           "type": "completion",
+           "analyzer": "keyword",
+           "preserve_separators": true,
+           "preserve_position_increments": true,
+           "max_input_length": 50
+         },
+         "title": {
+           "type": "text",
+           "analyzer": "ik_max_word"
+         },
+         "user_id": {
+           "type": "long",
+           "index": false
+         },
+         "user_name": {
+           "type": "text",
+           "analyzer": "ik_max_word"
+         }
+       }
+     }
+   }
+   ```
+- 删除索引
+  ```json
+  DELETE /blog
+   ```
+- 查询索引中所有文档
+   ```json
+   GET /blog/_search
+   {
+   "query": {
+   "match_all": {}
+   }
+   }
+   ```
+- 测试分词器
+   ```json
+   GET /_analyze
+   {
+   "analyzer": "ik_max_word",
+   "text": "黑马程序员学习java太棒了"
+   }
+   ```

@@ -4,14 +4,14 @@ spring:
   application:
     name: fileservice # 服务名称
   datasource:
-    url: jdbc:mysql://10.129.0.31:3306/EBed?useSSL=false
+    url: jdbc:mysql://43.138.30.47:3306/EBed?useSSL=false
     username: root
-    password: Dyp20001209
+    password: 123456
     driver-class-name: com.mysql.jdbc.Driver
   redis:
-    host: 10.129.0.31
+    host: 43.138.30.47
     port: 6379
-    password: Dyp20001209
+    password: 123456
     lettuce:
       pool:
         max-active: 8
@@ -20,7 +20,7 @@ spring:
         max-wait: 100ms
   cloud:
     nacos:
-      server-addr: 10.129.0.31:8848
+      server-addr: 10.29.186.231:8848
   servlet:
     multipart:
       max-file-size: 100MB

@@ -26,7 +26,7 @@ public class BlogConfig {
     @Bean
     public RestHighLevelClient restHighLevelClient() {
         return new RestHighLevelClient(RestClient.builder(
-                HttpHost.create("http://10.129.0.31:9200")
+                HttpHost.create("http://10.29.186.231:9200")
         ));
     }
 
