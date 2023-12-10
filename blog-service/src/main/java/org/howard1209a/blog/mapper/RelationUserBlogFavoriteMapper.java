@@ -10,7 +10,7 @@ public interface RelationUserBlogFavoriteMapper {
     public void insertOneFavorite(RelationUserBlogFavorite relationUserBlogFavorite);
 
     @Delete("delete from relation_user_blog_favorite where user_id = #{userId} and blog_id = #{blogId}")
-    public void deleteOneFavorite(RelationUserBlogFavorite relationUserBlogFavorite);
+    public int deleteOneFavorite(RelationUserBlogFavorite relationUserBlogFavorite);
 
     @Select("select * from relation_user_blog_favorite where user_id = #{userId} and blog_id = #{blogId}")
     public RelationUserBlogFavorite queryFavoriteByUserAndBlog(RelationUserBlogFavorite relationUserBlogFavorite);

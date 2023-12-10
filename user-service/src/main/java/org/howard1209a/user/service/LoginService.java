@@ -40,7 +40,7 @@ public class LoginService {
             return new Response<>(false, "密码错误");
         }
         // 更新session
-        redisUtil.setObject(USER_STATE_KEY + session, new UserState(null, true, user.getUserId(), null));
+        redisUtil.setObject(USER_STATE_KEY + session, new UserState(null, true, user.getUserId(), null, null));
 
         // 如果是今天第一次登录则初始化今日获取经验限制信息（用户状态）
         String key = EXP_LIMIT_KEY + user.getUserId();

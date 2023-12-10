@@ -201,17 +201,17 @@ netsh interface portproxy reset
 # ssh
 netsh interface portproxy add v4tov4 listenport=22 listenaddress=0.0.0.0 connectport=22 connectaddress=172.17.31.147
 # nacos
-netsh interface portproxy add v4tov4 listenport=8848 listenaddress=0.0.0.0 connectport=8848 connectaddress=172.17.31.147
+netsh interface portproxy add v4tov4 listenport=8848 listenaddress=0.0.0.0 connectport=8848 connectaddress=192.168.64.166
 # rabbitmq web管理
-netsh interface portproxy add v4tov4 listenport=15672 listenaddress=0.0.0.0 connectport=15672 connectaddress=172.17.31.147
+netsh interface portproxy add v4tov4 listenport=15672 listenaddress=0.0.0.0 connectport=15672 connectaddress=192.168.64.166
 # rabbitmq 消息通信
-netsh interface portproxy add v4tov4 listenport=5672 listenaddress=0.0.0.0 connectport=5672 connectaddress=172.17.31.147
+netsh interface portproxy add v4tov4 listenport=5672 listenaddress=0.0.0.0 connectport=5672 connectaddress=192.168.64.166
 # es外部通信
-netsh interface portproxy add v4tov4 listenport=9200 listenaddress=0.0.0.0 connectport=9200 connectaddress=172.17.23.77
+netsh interface portproxy add v4tov4 listenport=9200 listenaddress=0.0.0.0 connectport=9200 connectaddress=192.168.68.187
 # es集群通信
-netsh interface portproxy add v4tov4 listenport=9300 listenaddress=0.0.0.0 connectport=9300 connectaddress=172.17.23.77
+netsh interface portproxy add v4tov4 listenport=9300 listenaddress=0.0.0.0 connectport=9300 connectaddress=192.168.68.187
 # Kibana-es可视化工具
-netsh interface portproxy add v4tov4 listenport=5601 listenaddress=0.0.0.0 connectport=5601 connectaddress=172.17.23.77
+netsh interface portproxy add v4tov4 listenport=5601 listenaddress=0.0.0.0 connectport=5601 connectaddress=192.168.68.187
 ```
 
 

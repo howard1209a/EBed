@@ -210,6 +210,32 @@
             background-color: #f1f1f1;
         }
 
+        .blog-item {
+            display: flex; /* 添加这行以使博客信息的子元素水平排列 */
+            flex-direction: column; /* 如果需要，可以调整为水平排列 */
+            /* 其他样式，根据需要添加或修改 */
+        }
+
+        .blog-item img.author-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px; /* 为头像和用户名之间添加右边距 */
+        }
+
+        .author-info {
+            display: flex; /* 添加这行以使博客信息的子元素水平排列 */
+            flex-direction: row; /* 如果需要，可以调整为水平排列 */
+            /* 其他样式，根据需要添加或修改 */
+        }
+
+        .author-info img.author-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px; /* 为头像和用户名之间添加右边距 */
+        }
+
     </style>
 </head>
 <body>
@@ -227,7 +253,7 @@
         <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/search.html')">
             <i class="fas fa-search"></i> 全局搜索
         </div>
-        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/profile.html')">
+        <div class="menu-item" onclick="navigateToProfile('http://localhost:10010/static/profile.html')">
             <i class="fas fa-user"></i> 用户主页
         </div>
         <div class="user-info">
@@ -408,14 +434,18 @@
 
             // 显示博客信息
             resultItem.innerHTML = `
-        <h2>${results[i].title}</h2>
-        <p><strong>作者:</strong> ${results[i].userName}</p>
-        <p><strong>发布时间:</strong> ${results[i].createTime}</p>
-        <p><strong>标签:</strong> ${results[i].labels.join(', ')}</p>
-        <p><strong>内容:</strong> ${results[i].content}</p>
-        <p><strong>收藏数:</strong> ${results[i].favouriteNum}</p>
-        <p><strong>评论数:</strong> ${results[i].commentNum}</p>
-    `;
+                <h2>${results[i].title}</h2>
+                <div class="author-info">
+                    <img class="author-avatar" src="http://localhost:10010/user/common/profilePhoto/download?userId=${results[i].userId}" alt="作者头像">
+                    <p>${results[i].userName}</p>
+                </div>
+                <p><strong>发布时间:</strong> ${results[i].createTime}</p>
+                <p><strong>标签:</strong> ${results[i].labels.join(', ')}</p>
+                <p><strong>内容:</strong> ${results[i].content}</p>
+                <p><strong>收藏数:</strong> ${results[i].favouriteNum}</p>
+                <p><strong>评论数:</strong> ${results[i].commentNum}</p>
+            `;
+
 
             // 将 div 添加到搜索结果容器中
             searchResultsContainer.appendChild(resultItem);
@@ -441,6 +471,25 @@
     function navigateTo(page) {
         // 使用 window.location.href 进行页面跳转
         window.location.href = page;
+    }
+
+    function navigateToProfile(page) {
+        fetch('http://localhost:10010/user/common/loginUser')
+            .then(response => response.json())
+            .then(msg => {
+                const loginUser = msg.data;
+                fetch('http://localhost:10010/user/common/nextProfileUserId?nextProfileUserId=' + loginUser.userId)
+                    .then(response => {
+                        // 使用 window.location.href 进行页面跳转
+                        window.location.href = page;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching username:', error);
+                    });
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+            });
     }
 </script>
 </body>

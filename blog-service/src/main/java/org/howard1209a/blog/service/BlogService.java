@@ -15,6 +15,7 @@ import org.howard1209a.blog.pojo.dto.BlogLoadDto;
 import org.howard1209a.blog.util.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.wltea.analyzer.core.IKSegmenter;
 import org.wltea.analyzer.core.Lexeme;
@@ -66,13 +67,11 @@ public class BlogService {
         // 发布一篇博客，尝试加一下自己的经验值
         userClient.addExp(userId, EXP_LIMIT_PUBLISHBLOG_LIMIT_HASHKEY);
 
-        // 接下来新增博客(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
-        redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + blogId);
-
+        // 接下来新增博客(双库)，因为是新增操作所以不用上锁
         blogMapper.insertOneBlog(blog); // 持久化blog
         labelService.saveRelation(blogDto.getLabels(), blogId); // 持久化label关系
 
-        mqUtil.sendBlog(blogId);
+        mqUtil.sendBlog(blogId); // 生产一条同步消息
     }
 
     public void browseRefresh(String session) {
@@ -125,22 +124,32 @@ public class BlogService {
         userClient.addExp(blog.getUserId(), EXP_BLOG_FAVORITE_BY_OTHER);
 
         // 接下来更新博客记录(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
+        // 如果不涉及双库同步的话这里是不用上锁就可以保证幂等性和数据一致性的，但是双库同步的话要走mq，而并发情况下最后生产的那个保证数据一致的消息并不一定排在队尾，因此要关于博客上锁
         redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + blogId);
+        try {
+            relationUserBlogFavoriteMapper.insertOneFavorite(new RelationUserBlogFavorite(userState.getUserId(), blogId));
+        } catch (DuplicateKeyException e) {
+            redisLockUtil.unlock(MYSQL_ES_SYNC_BLOG + blogId);
+            return;
+        }
         blogMapper.plusFavouriteNum(blogId);
-        relationUserBlogFavoriteMapper.insertOneFavorite(new RelationUserBlogFavorite(userState.getUserId(), blogId));
 
-        mqUtil.sendBlog(blogId);
+        mqUtil.sendBlog(blogId); // 生产一条同步消息
     }
 
     public void unfavoriteBlog(String session, Long blogId) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
 
         // 接下来更新博客记录(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
+        // 上锁原因同favoriteBlog()
         redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + blogId);
+        if (relationUserBlogFavoriteMapper.deleteOneFavorite(new RelationUserBlogFavorite(userState.getUserId(), blogId)) == 0) {
+            redisLockUtil.unlock(MYSQL_ES_SYNC_BLOG + blogId);
+            return;
+        }
         blogMapper.subtractFavouriteNum(blogId);
-        relationUserBlogFavoriteMapper.deleteOneFavorite(new RelationUserBlogFavorite(userState.getUserId(), blogId));
 
-        mqUtil.sendBlog(blogId);
+        mqUtil.sendBlog(blogId); // 生产一条同步消息
     }
 
     public BlogLoadDto queryOneBlogById(String session, Long blogId) {
@@ -155,6 +164,6 @@ public class BlogService {
         String url = "http://localhost:10010/file/img/download/" + img.getImgId() + "." + img.getImgType();
         List<String> labels = labelMapper.queryLabelsForOneBlog(blog.getBlogId());
         boolean isFavorite = relationUserBlogFavoriteMapper.queryFavoriteByUserAndBlog(new RelationUserBlogFavorite(userState.getUserId(), blog.getBlogId())) != null;
-        return new BlogLoadDto(blog, user.getUserName(), url, isFavorite, labels);
+        return new BlogLoadDto(blog, user.getUserName(), blog.getUserId(), url, isFavorite, labels);
     }
 }

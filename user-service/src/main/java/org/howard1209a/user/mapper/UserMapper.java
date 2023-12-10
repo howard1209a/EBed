@@ -16,4 +16,19 @@ public interface UserMapper {
 
     @Update("update user set exp = exp + #{num} where user_id = #{userId}")
     public void addExp(Long userId, Integer num);
+
+    @Update("update user set self_introduction = #{selfIntroduction} where user_id = #{userId}")
+    public void updateSelfIntroduction(Long userId, String selfIntroduction);
+
+    @Update("update user set follow_num = follow_num + 1 where user_id = #{userId}")
+    public void addOneFollowNum(Long userId);
+
+    @Update("update user set fun_num = fun_num + 1 where user_id = #{userId}")
+    public void addOneFunNum(Long userId);
+
+    @Update("update user set follow_num = follow_num - 1 where user_id = #{userId}")
+    public void subtractOneFollowNum(Long userId);
+
+    @Update("update user set fun_num = fun_num - 1 where user_id = #{userId}")
+    public void subtractOneFunNum(Long userId);
 }

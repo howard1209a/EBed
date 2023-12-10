@@ -259,6 +259,22 @@
             font-size: 12px;
         }
 
+        .author-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .author-avatar {
+            width: 30px; /* 调整头像的宽度，根据需要调整 */
+            height: 30px; /* 调整头像的高度，根据需要调整 */
+            border-radius: 50%; /* 使头像呈圆形，根据需要调整 */
+            margin-right: 10px; /* 调整头像和用户名之间的间距，根据需要调整 */
+        }
+
+        .author-info p {
+            margin: 0; /* 清除段落的默认上下边距 */
+        }
+
     </style>
 </head>
 <body>
@@ -276,7 +292,7 @@
         <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/search.html')">
             <i class="fas fa-search"></i> 全局搜索
         </div>
-        <div class="menu-item" onclick="navigateTo('http://localhost:10010/static/profile.html')">
+        <div class="menu-item" onclick="navigateToProfile('http://localhost:10010/static/profile.html')">
             <i class="fas fa-user"></i> 用户主页
         </div>
         <div class="user-info">
@@ -326,8 +342,29 @@
                     const titleParagraph = document.createElement("p");
                     titleParagraph.textContent = `博客标题: ${blogLoadDto.blog.title}`;
 
-                    const authorParagraph = document.createElement("p");
-                    authorParagraph.textContent = `作者: ${blogLoadDto.userName}`;
+                    // 创建作者信息的 div 元素
+                    const authorInfoDiv = document.createElement("div");
+                    authorInfoDiv.classList.add("author-info");
+
+                    // 创建作者头像的 img 元素
+                    const authorAvatarImg = document.createElement("img");
+                    authorAvatarImg.src = "http://localhost:10010/user/common/profilePhoto/download?userId=" + blogLoadDto.userId;
+                    authorAvatarImg.alt = "作者头像";
+                    authorAvatarImg.classList.add("author-avatar");
+
+                    // 添加点击事件监听器
+                    authorAvatarImg.addEventListener('click', function () {
+                        // 刷新页面
+                        refreshUserDetails(blogLoadDto.userId);
+                    });
+
+                    // 创建作者用户名的 p 元素
+                    const authorUsernameParagraph = document.createElement("p");
+                    authorUsernameParagraph.textContent = blogLoadDto.userName;
+
+                    // 将作者头像和用户名添加到作者信息 div 中
+                    authorInfoDiv.appendChild(authorAvatarImg);
+                    authorInfoDiv.appendChild(authorUsernameParagraph);
 
                     const favoriteButton = document.createElement("button");
                     if (blogLoadDto.favorite) {
@@ -353,8 +390,8 @@
                         categoryTagsDiv.appendChild(categoryTag);
                     });
 
+                    imageInfoDiv.appendChild(authorInfoDiv);
                     imageInfoDiv.appendChild(titleParagraph);
-                    imageInfoDiv.appendChild(authorParagraph);
                     imageInfoDiv.appendChild(favoriteButton);
                     imageInfoDiv.appendChild(readBlogButton);
                     imageInfoDiv.appendChild(categoryTagsDiv);
@@ -661,6 +698,19 @@
             }, delay);
         };
     }
+
+    function refreshUserDetails(userId) {
+        // 先发一个请求刷新后端会话状态中保存的接下来将要访问的用户主页的用户ID，收到结果后转到用户主页
+        fetch('http://localhost:10010/user/common/nextProfileUserId?nextProfileUserId=' + userId)
+            .then(response => {
+                // 加载用户详情页面
+                window.location.href = `http://localhost:10010/static/userprofile.html`;
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+            });
+    }
+
 </script>
 
 <script>
@@ -681,6 +731,25 @@
     function navigateTo(page) {
         // 使用 window.location.href 进行页面跳转
         window.location.href = page;
+    }
+
+    function navigateToProfile(page) {
+        fetch('http://localhost:10010/user/common/loginUser')
+            .then(response => response.json())
+            .then(msg => {
+                const loginUser = msg.data;
+                fetch('http://localhost:10010/user/common/nextProfileUserId?nextProfileUserId=' + loginUser.userId)
+                    .then(response => {
+                        // 使用 window.location.href 进行页面跳转
+                        window.location.href = page;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching username:', error);
+                    });
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+            });
     }
 </script>
 </body>

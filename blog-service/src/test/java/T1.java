@@ -14,6 +14,7 @@ import org.howard1209a.blog.mapper.CommentMapper;
 import org.howard1209a.blog.mapper.LabelMapper;
 import org.howard1209a.blog.pojo.Blog;
 import org.howard1209a.blog.pojo.Label;
+import org.howard1209a.blog.pojo.User;
 import org.howard1209a.blog.pojo.doc.BlogDoc;
 import org.howard1209a.blog.util.SnowflakeIdUtils;
 import org.junit.Test;

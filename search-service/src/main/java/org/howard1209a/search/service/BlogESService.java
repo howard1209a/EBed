@@ -121,6 +121,8 @@ public class BlogESService {
             }
             blogDocs.add(blogDoc);
         }
+
+
         return blogDocs;
     }
 
@@ -167,7 +169,7 @@ public class BlogESService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            // 双库同步完成，锁要解开
+            // 双库同步完成，如果本次put上了锁这里要解开
             redisLockUtil.unlock(MYSQL_ES_SYNC_BLOG + blogId);
         }
     }

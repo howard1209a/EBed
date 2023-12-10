@@ -1,5 +1,6 @@
 package org.howard1209a.user.controller;
 
+import org.howard1209a.user.pojo.User;
 import org.howard1209a.user.pojo.dto.ExpDto;
 import org.howard1209a.user.pojo.dto.Response;
 import org.howard1209a.user.service.UserService;
@@ -29,9 +30,9 @@ public class UserController {
     }
 
     @GetMapping("/profilePhoto/download")
-    public void downloadProfilePhoto(@RequestParam(value = "userId", required = false) Long userId, HttpServletRequest request, HttpServletResponse response) {
+    public void downloadProfilePhoto(@RequestParam(value = "userId",required = false) Long userId, HttpServletRequest request, HttpServletResponse response) {
         Cookie cookie = Utils.getCookie("session", request);
-        userService.downloadProfilePhoto(cookie.getValue(), userId, request, response);
+        userService.downloadProfilePhoto(userId,cookie.getValue(), request, response);
     }
 
     @GetMapping("/userName/update")
@@ -41,13 +42,49 @@ public class UserController {
     }
 
     @GetMapping("/exp/select")
-    public Response<ExpDto> queryExp(HttpServletRequest request) {
+    public Response<ExpDto> queryExpByNextProfileUserId(HttpServletRequest request) {
         Cookie cookie = Utils.getCookie("session", request);
-        return userService.queryExp(cookie.getValue());
+        return userService.queryExpByNextProfileUserId(cookie.getValue());
     }
 
     @GetMapping("/exp/add")
     public void addExp(Long userId, String addExpType) {
         userService.addExp(userId, addExpType);
+    }
+
+    @PostMapping("/selfIntroduction/update")
+    public void updateSelfIntroduction(@RequestBody String selfIntroduction, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        userService.updateSelfIntroduction(cookie.getValue(), selfIntroduction);
+    }
+
+    @GetMapping("/query")
+    public Response<User> queryOneUserByNextProfileUserId(HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        return userService.queryOneUserByNextProfileUserId(cookie.getValue());
+    }
+
+    @GetMapping("/follow")
+    public void follow(Long followedUserId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        userService.follow(cookie.getValue(), followedUserId);
+    }
+
+    @GetMapping("/unfollow")
+    public void unFollow(Long unFollowedUserId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        userService.unFollow(cookie.getValue(), unFollowedUserId);
+    }
+
+    @GetMapping("/nextProfileUserId")
+    public void setNextProfileUserId(Long nextProfileUserId, HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        userService.setNextProfileUserId(cookie.getValue(), nextProfileUserId);
+    }
+
+    @GetMapping("/loginUser")
+    public Response<User> queryLoginUser(HttpServletRequest request) {
+        Cookie cookie = Utils.getCookie("session", request);
+        return userService.queryLoginUser(cookie.getValue());
     }
 }

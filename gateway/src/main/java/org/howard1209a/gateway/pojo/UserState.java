@@ -14,4 +14,5 @@ public class UserState {
     private boolean isLogin;
     private Long userId;
     private List<Long> lastUploadedImgId;
+    private Long nextProfileUserId;
 }

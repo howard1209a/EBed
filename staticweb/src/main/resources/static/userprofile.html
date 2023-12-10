@@ -256,6 +256,38 @@
             flex-direction: column; /* 将子元素垂直排列 */
         }
 
+        /* 关注按钮样式 */
+        #follow-btn-container {
+            margin-top: 10px;
+        }
+
+        .follow-btn {
+            background-color: #007bff; /* 按钮背景颜色 */
+            color: #fff; /* 按钮文字颜色 */
+            border: none;
+            padding: 8px 16px; /* 按钮内边距 */
+            border-radius: 5px; /* 圆角边框 */
+            cursor: pointer;
+            transition: background-color 0.3s ease; /* 颜色变化过渡效果 */
+        }
+
+        .follow-btn:hover {
+            background-color: #0056b3; /* 按钮在悬停时的背景颜色 */
+        }
+
+        .follow-btn.following {
+            background-color: #ff0000; /* 按钮背景颜色 */
+            color: #fff; /* 按钮文字颜色 */
+            border: none;
+            padding: 8px 16px; /* 按钮内边距 */
+            border-radius: 5px; /* 圆角边框 */
+            cursor: pointer;
+            transition: background-color 0.3s ease; /* 颜色变化过渡效果 */
+        }
+
+        .follow-btn.following:hover {
+            background-color: #990000; /* 按钮在悬停时的背景颜色 */
+        }
     </style>
 </head>
 <body>
@@ -295,11 +327,10 @@
                         <img id="profilePhoto" src="http://localhost:10010/user/common/profilePhoto/download"
                              alt="用户头像">
                     </div>
-                    <!-- 上传按钮 -->
-                    <!-- 在上传按钮的下方添加一个input元素 -->
-                    <div class="upload-btn-wrapper">
-                        <button id="upload-avatar-btn" onclick="uploadAvatar()">上传头像</button>
-                        <input type="file" id="fileInput" style="display:none" accept="image/*">
+                    <!-- 添加关注按钮的 div -->
+                    <div id="follow-btn-container">
+                        <!-- 在这里插入关注按钮的内容 -->
+                        <button class="follow-btn" id="follow-btn">关注</button>
                     </div>
                 </div>
                 <!-- 用户名简要信息区域 -->
@@ -307,7 +338,6 @@
                     <!-- 从左到右依次显示用户名、等级、徽章 -->
                     <div class="info-item">
                         <p id="userName">JohnDoe</p>
-                        <button onclick="editUsername()">修改用户名</button>
                     </div>
                     <div class="info-item">
                         <p id="exp">等级 5 [经验值200/1000]</p>
@@ -322,24 +352,15 @@
                 <!-- 粉丝关注区域 -->
                 <div id="fan-follow-area" style="display: flex; justify-content: space-between;">
                     <!-- 从左到右依次显示粉丝数、关注数、获赞、设置按钮 -->
-                    <a href="#" onclick="showFanDetails()">
-                        <p>粉丝100</p>
-                    </a>
-                    <a href="#" onclick="showFollowDetails()">
-                        <p>关注50</p>
-                    </a>
+                    <p>粉丝100</p>
+                    <p>关注50</p>
                     <p>获赞25</p>
-                    <button id="settingsBtn" onclick="openSettings()">设置</button>
                 </div>
                 <!-- 个人描述区域 -->
                 <div id="description-area">
                     <!-- 使用 div 包裹个人描述内容 -->
                     <div class="description-content">
                         <p id="selfDescription">个人描述：</p>
-                    </div>
-                    <!-- 使用 div 包裹修改描述按钮 -->
-                    <div class="edit-description-btn">
-                        <button id="editDescriptionBtn" onclick="editDescription()">修改描述</button>
                     </div>
                 </div>
             </div>
@@ -433,123 +454,6 @@
 </div>
 
 <script>
-    function uploadAvatar() {
-        // 触发文件选择对话框
-        document.getElementById('fileInput').click();
-    }
-
-    // 添加文件选择监听器
-    document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-
-    // 处理用户选择的文件
-    function handleFileSelect(event) {
-        const fileInput = event.target;
-        const files = fileInput.files;
-
-        if (files.length > 0) {
-            const selectedFile = files[0];
-
-            // 发送选中的文件到后端，这里使用了Fetch API
-            const formData = new FormData();
-            formData.append('avatar', selectedFile);
-
-            fetch('http://localhost:10010/user/common/profilePhoto/upload', {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => {
-                    // 重新加载图片
-                    let img = document.getElementById("profilePhoto");
-                    let originalSrc = img.src;
-                    img.src = originalSrc + "?timestamp=" + new Date().getTime();
-                })
-                .catch(error => {
-                    // 处理上传失败的情况
-                    console.error('上传失败', error);
-                });
-        }
-    }
-
-    function editUsername() {
-        // 使用SweetAlert2模态框获取用户输入
-        Swal.fire({
-            title: '修改用户名',
-            input: 'text',
-            inputValue: '',  // 设置默认值，可以根据实际情况修改
-            showCancelButton: true,
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
-            inputValidator: (value) => {
-                // 输入验证逻辑，可以根据需要自定义
-                if (!value) {
-                    return '用户名不能为空';
-                }
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const newUsername = result.value;
-                fetch('http://localhost:10010/user/common/userName/update?userName=' + newUsername)
-                    .then(response => {
-                        updateUserName();
-                    })
-                    .catch(error => {
-                        console.error('Error fetching username:', error);
-                    });
-            }
-        });
-    }
-
-    function openSettings() {
-        // 在这里处理打开设置的逻辑
-        alert("打开设置功能尚未实现");
-    }
-
-    function showFanDetails() {
-        alert("粉丝功能尚未实现");
-    }
-
-    function showFollowDetails() {
-        alert("关注功能尚未实现");
-    }
-
-    function editDescription() {
-        // 使用SweetAlert2模态框获取用户输入
-        Swal.fire({
-            title: '修改个人描述',
-            input: 'textarea',
-            inputValue: '',  // 设置默认值，可以根据实际情况修改
-            showCancelButton: true,
-            confirmButtonText: '确认',
-            cancelButtonText: '取消',
-            inputValidator: (value) => {
-                // 输入验证逻辑，可以根据需要自定义
-                if (!value) {
-                    return '个人描述不能为空';
-                }
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                const newDescription = result.value;
-                // 发送个人描述到后端，这里使用了Fetch API
-                fetch('http://localhost:10010/user/common/selfIntroduction/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain', // 将Content-Type改为text/plain
-                    },
-                    body: newDescription, // 直接将文本作为请求体
-                })
-                    .then(response => {
-                        // 更新个人描述
-                        updateSelfDescription();
-                    })
-                    .catch(error => {
-                        // 处理失败的情况
-                        console.error('更新个人描述失败', error);
-                    });
-            }
-        });
-    }
-
     function logout() {
         // 清空所有 cookie
         document.cookie.split(";").forEach((c) => {
@@ -580,17 +484,6 @@
                     .catch(error => {
                         console.error('Error fetching username:', error);
                     });
-            })
-            .catch(error => {
-                console.error('Error fetching username:', error);
-            });
-    }
-
-    function updateUserName() {
-        fetch('http://localhost:10010/user/login/userInfo')
-            .then(response => response.json())
-            .then(msg => {
-                document.getElementById("userName").innerHTML = msg.data;
             })
             .catch(error => {
                 console.error('Error fetching username:', error);
@@ -647,12 +540,21 @@
             .then(msg => {
                 // 更新 user-info 标签的内容
                 document.querySelector('.user-info-inner').innerHTML = msg.data;
-                document.getElementById("userName").innerHTML = msg.data;
             })
             .catch(error => {
                 console.error('Error fetching username:', error);
             });
-        // 页面加载时发送 fetch 请求获取用户经验值
+        // 页面加载时发送 fetch 请求获取当前主页用户的用户名
+        fetch('http://localhost:10010/user/common/query')
+            .then(response => response.json())
+            .then(msg => {
+                const userData = msg.data;
+                document.getElementById("userName").innerHTML = userData.userName;
+            })
+            .catch(error => {
+                console.error('Error fetching username:', error);
+            });
+        // 页面加载时发送 fetch 请求获取当前主页用户的经验值
         fetch('http://localhost:10010/user/common/exp/select')
             .then(response => response.json())
             .then(msg => {
@@ -662,8 +564,40 @@
             .catch(error => {
                 console.error('Error fetching username:', error);
             });
-        // 页面加载时更新个人描述
+        // 页面加载时更新当前主页用户的个人描述
         updateSelfDescription();
+
+        // 获取关注按钮和按钮容器
+        const followBtn = document.getElementById('follow-btn');
+        const followBtnContainer = document.getElementById('follow-btn-container');
+
+        // 初始化关注状态，可以根据实际情况设置默认状态
+        let isFollowing = false;
+
+        // 定义切换关注状态的函数
+        function toggleFollowStatus() {
+            isFollowing = !isFollowing; // 切换关注状态
+
+            // 根据关注状态切换样式和文字
+            if (isFollowing) {
+                fetch('http://localhost:10010/user/common/follow')
+                    .catch(error => {
+                        console.error('Error fetching username:', error);
+                    });
+                followBtn.classList.add('following');
+                followBtn.innerText = '取消关注';
+            } else {
+                fetch('http://localhost:10010/user/common/unfollow')
+                    .catch(error => {
+                        console.error('Error fetching username:', error);
+                    });
+                followBtn.classList.remove('following');
+                followBtn.innerText = '关注';
+            }
+        }
+
+        // 监听按钮点击事件，执行切换关注状态的函数
+        followBtnContainer.addEventListener('click', toggleFollowStatus);
     });
 </script>
 </body>

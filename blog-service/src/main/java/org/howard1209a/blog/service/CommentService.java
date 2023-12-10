@@ -16,6 +16,7 @@ import org.howard1209a.blog.util.RedisUtil;
 import org.howard1209a.blog.util.SnowflakeIdUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -56,14 +57,15 @@ public class CommentService {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         comment.setUserId(userState.getUserId());
         comment.setCommentId(snowflakeIdUtils.nextId());
-        // 插入评论记录
-        commentMapper.insertComment(comment);
+
+        commentMapper.insertComment(comment); // 插入评论记录
 
         // 接下来更新博客记录(双库)，首先在博客条目上一把锁，es服务同步完这把锁才会解开
+        // 上锁原因同favoriteBlog()，注意要尽可能地把不需要上锁的操作提到锁外以提高性能，比如这里的insertComment操作
         redisLockUtil.blockingGetLock(MYSQL_ES_SYNC_BLOG + comment.getBlogId());
         blogMapper.plusCommentNum(comment.getBlogId());
 
-        mqUtil.sendBlog(comment.getBlogId());
+        mqUtil.sendBlog(comment.getBlogId()); // 生产一条同步消息
     }
 
     public Response<List<CommentDto>> queryAllCommentForOneBlog(String session, Long blogId) {
@@ -103,10 +105,13 @@ public class CommentService {
     public void likeOneComment(String session, Long commentId) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         String lockKey = USER_COMMENT_LIKE_RELATION + userState.getUserId() + ":" + commentId;
-        redisLockUtil.blockingGetLock(lockKey);
+
+        try {
+            relationUserCommentLikeMapper.insertOneLikeRelation(new RelationUserCommentLike(userState.getUserId(), commentId));
+        } catch (DuplicateKeyException e) {
+            return;
+        }
         commentMapper.plusLikeForOneComment(commentId);
-        relationUserCommentLikeMapper.insertOneLikeRelation(new RelationUserCommentLike(userState.getUserId(), commentId));
-        redisLockUtil.unlock(lockKey);
 
         userClient.addExp(userState.getUserId(), EXP_LIMIT_LIKECOMMENT_LIMIT_HASHKEY); // 尝试加一下自己的经验值
         Long userId = commentMapper.queryUserIdByCommentId(commentId);
@@ -116,9 +121,10 @@ public class CommentService {
     public void unlikeOneComment(String session, Long commentId) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
         String lockKey = USER_COMMENT_LIKE_RELATION + userState.getUserId() + ":" + commentId;
-        redisLockUtil.blockingGetLock(lockKey);
+
+        if (relationUserCommentLikeMapper.deleteOneLikeRelation(new RelationUserCommentLike(userState.getUserId(), commentId)) == 0) {
+            return;
+        }
         commentMapper.subtractLikeForOneComment(commentId);
-        relationUserCommentLikeMapper.deleteOneLikeRelation(new RelationUserCommentLike(userState.getUserId(), commentId));
-        redisLockUtil.unlock(lockKey);
     }
 }

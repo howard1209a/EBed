@@ -39,7 +39,7 @@ public class RegisterService {
         LineCaptcha lineCaptcha = CaptchaUtil.createLineCaptcha(200, 90, 4, 100);
         // 验证码值
         String code = lineCaptcha.getCode();
-        redisUtil.setObject(USER_STATE_KEY + session, new UserState(code, false, null, null));
+        redisUtil.setObject(USER_STATE_KEY + session, new UserState(code, false, null, null, null));
         // 输出到客户端
         try (ServletOutputStream outputStream = response.getOutputStream()) {
             // 图形验证码写出，写出到流
@@ -54,7 +54,7 @@ public class RegisterService {
         Cookie cookie = new Cookie("session", id + "");
         cookie.setPath("/"); // cookie的path设置为/，意味着此cookie只要不跨域就可以随便共享
         response.addCookie(cookie);
-        redisUtil.setObject(USER_STATE_KEY + id, new UserState(null, false, null, null));
+        redisUtil.setObject(USER_STATE_KEY + id, new UserState(null, false, null, null, null));
     }
 
     public Response<String> checkAndRegister(RegisterDto registerDto, String session) {

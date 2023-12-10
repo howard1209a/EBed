@@ -10,7 +10,7 @@ public interface RelationUserCommentLikeMapper {
     RelationUserCommentLike queryOneLikeRelation(RelationUserCommentLike relationUserCommentLike);
 
     @Delete("delete from relation_user_comment_like where user_id = #{userId} and comment_id = #{commentId}")
-    void deleteOneLikeRelation(RelationUserCommentLike relationUserCommentLike);
+    Integer deleteOneLikeRelation(RelationUserCommentLike relationUserCommentLike);
 
     @Insert("insert into relation_user_comment_like values (#{userId},#{commentId})")
     void insertOneLikeRelation(RelationUserCommentLike relationUserCommentLike);

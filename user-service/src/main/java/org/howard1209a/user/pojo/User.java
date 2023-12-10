@@ -1,5 +1,7 @@
 package org.howard1209a.user.pojo;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +13,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long userId;
     private String userName;
     private String password;

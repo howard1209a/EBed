@@ -1,5 +1,6 @@
 package org.howard1209a.user.service;
 
+import org.howard1209a.user.mapper.RelationUserUserFollowMapper;
 import org.howard1209a.user.mapper.UserMapper;
 import org.howard1209a.user.pojo.User;
 import org.howard1209a.user.pojo.UserState;
@@ -8,6 +9,7 @@ import org.howard1209a.user.pojo.dto.Response;
 import org.howard1209a.user.util.RedisUtil;
 import org.howard1209a.user.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +26,8 @@ public class UserService {
     private RedisUtil redisUtil;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private RelationUserUserFollowMapper relationUserUserFollowMapper;
 
     public void saveProfilePhoto(String session, MultipartFile multipartFile) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
@@ -45,10 +49,10 @@ public class UserService {
         userMapper.updateProfilePhotoType(profilePhotoType, userState.getUserId());
     }
 
-    public void downloadProfilePhoto(String session, Long userId, HttpServletRequest request, HttpServletResponse response) {
+    public void downloadProfilePhoto(Long userId, String session, HttpServletRequest request, HttpServletResponse response) {
         if (userId == null) {
             UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
-            userId = userState.getUserId();
+            userId = userState.getNextProfileUserId();
         }
         User user = userMapper.queryUserById(userId);
 
@@ -76,9 +80,9 @@ public class UserService {
         userMapper.updateUserName(userName, userState.getUserId());
     }
 
-    public Response<ExpDto> queryExp(String session) {
+    public Response<ExpDto> queryExpByNextProfileUserId(String session) {
         UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
-        User user = userMapper.queryUserById(userState.getUserId());
+        User user = userMapper.queryUserById(userState.getNextProfileUserId());
         return new Response<>(true, new ExpDto(user.getExp()));
     }
 
@@ -122,5 +126,50 @@ public class UserService {
         } else {
             return false;
         }
+    }
+
+    public void updateSelfIntroduction(String session, String selfIntroduction) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        userMapper.updateSelfIntroduction(userState.getUserId(), selfIntroduction);
+    }
+
+    public Response<User> queryOneUserByNextProfileUserId(String session) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        User user = userMapper.queryUserById(userState.getNextProfileUserId());
+        return new Response<>(true, user);
+    }
+
+    public void follow(String session, Long followedUserId) { // TODO 后续同步es
+        // 保证幂等性和数据一致性
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        try {
+            relationUserUserFollowMapper.insertOneFollowRelation(userState.getUserId(), followedUserId);
+        } catch (DuplicateKeyException e) {
+            return;
+        }
+        userMapper.addOneFollowNum(userState.getUserId());
+        userMapper.addOneFunNum(followedUserId);
+    }
+
+    public void unFollow(String session, Long unFollowedUserId) { // TODO 后续同步es
+        // 保证幂等性和数据一致性
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        if (relationUserUserFollowMapper.deleteOneFollowRelation(userState.getUserId(), unFollowedUserId) == 0) {
+            return;
+        }
+        userMapper.subtractOneFollowNum(userState.getUserId());
+        userMapper.subtractOneFunNum(unFollowedUserId);
+    }
+
+    public void setNextProfileUserId(String session, Long nextProfileUserId) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        userState.setNextProfileUserId(nextProfileUserId);
+        redisUtil.setObject(USER_STATE_KEY + session, userState);
+    }
+
+    public Response<User> queryLoginUser(String session) {
+        UserState userState = redisUtil.getObject(USER_STATE_KEY + session, UserState.class);
+        User user = userMapper.queryUserById(userState.getUserId());
+        return new Response<>(true, user);
     }
 }
